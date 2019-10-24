@@ -130,6 +130,8 @@ class Plugin {
 	protected function hooks() {
 		// Register the payment gateway.
 		add_filter( 'edd_payment_gateways', array( $this, 'register_gateway' ), 1, 1 );
+		// Process purchase.
+		add_action( 'edd_gateway_stripe', array( $this, 'process_purchase' ) );
 	}
 
 	/**
@@ -227,11 +229,24 @@ class Plugin {
 			),
 		);
 
-		$default_stripe_info = apply_filters( 'edd_register_amazon_gateway', $default_stripe_info );
+		$default_stripe_info = apply_filters( 'edd_register_stripe_gateway', $default_stripe_info );
 		$gateways            = array_merge( $gateways, $default_stripe_info );
 
 		return $gateways;
 
+	}
+
+	/**
+	 * Process the purchase and create the charge in Stripe.
+	 * @param  [type] $purchase_data [description]
+	 * @return [type]                [description]
+	 */
+	public function process_purchase( $purchase_data ) {
+		edd_set_error( 'missing_reference_id', __( 'Missing Reference ID, please try again', 'edd-gateway-stripe' ) );
+		$errors = edd_get_errors();
+		if ( $errors ) {
+			edd_send_back_to_checkout( '?payment-mode=stripe' );
+		}
 	}
 
 	/**
