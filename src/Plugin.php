@@ -17,12 +17,20 @@ defined( 'ABSPATH' ) || exit;
  * @internal Note this is not called WC_Admin due to a class already existing in core with that name.
  */
 class Plugin {
+
 	/**
 	 * The single instance of the class.
 	 *
 	 * @var object
 	 */
 	protected static $instance = null;
+
+
+	/**
+	 * Gateway ID.
+	 * @var string
+	 */
+	const GATEWAY_ID = 'stripe';
 
 	/**
 	 * Constructor
@@ -119,7 +127,10 @@ class Plugin {
 	 *
 	 * @see WC_Admin_Library::__construct()
 	 */
-	protected function hooks() {}
+	protected function hooks() {
+		// Register the payment gateway.
+		add_filter( 'edd_payment_gateways', array( $this, 'register_gateway' ), 1, 1 );
+	}
 
 	/**
 	 * Returns true if all dependencies for the wc-admin plugin are loaded.
@@ -201,6 +212,26 @@ class Plugin {
 		if ( ! defined( $name ) ) {
 			define( $name, $value );
 		}
+	}
+
+	/**
+	 * Register the gateway.
+	 */
+	public function register_gateway( $gateways ) {
+
+		$default_stripe_info = array(
+			self::GATEWAY_ID => array(
+				'admin_label'    => __( 'Stripe', 'edd-gateway-stripe' ),
+				'checkout_label' => __( 'Credit Card (Stripe)', 'edd-gateway-stripe' ),
+				'supports'       => array(),
+			),
+		);
+
+		$default_stripe_info = apply_filters( 'edd_register_amazon_gateway', $default_stripe_info );
+		$gateways            = array_merge( $gateways, $default_stripe_info );
+
+		return $gateways;
+
 	}
 
 	/**
