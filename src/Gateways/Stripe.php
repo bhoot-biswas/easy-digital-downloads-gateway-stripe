@@ -5,6 +5,7 @@ namespace BengalStudio\EDD\Stripe\Gateways;
 defined( 'ABSPATH' ) || exit;
 
 use BengalStudio\EDD\Stripe\API;
+use BengalStudio\EDD\Stripe\Loader;
 
 /**
  * GatewayStripe class.
@@ -103,6 +104,7 @@ class Stripe {
 		if ( is_admin() ) {
 			add_filter( 'edd_settings_sections_gateways', array( $this, 'register_gateway_section' ), 1, 1 );
 			add_filter( 'edd_settings_gateways', array( $this, 'register_gateway_settings' ), 1, 1 );
+			add_action( 'edd_stripe_cc_form', array( $this, 'get_cc_form' ) );
 		}
 	}
 
@@ -177,7 +179,10 @@ class Stripe {
 	 * Add actions.
 	 * @return [type] [description]
 	 */
-	public function actions() {}
+	public function actions() {
+		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
+	}
 
 	/**
 	 * [is_setup description]
@@ -205,6 +210,107 @@ class Stripe {
 		}
 
 		return $this->is_setup;
+	}
+
+	/**
+	 * Register scripts.
+	 * @return [type] [description]
+	 */
+	public function register_scripts() {
+		wp_register_script( 'stripe', 'https://js.stripe.com/v3/', '', '3.0', true );
+		wp_register_script(
+			'edd_stripe',
+			Loader::get_url( 'stripe.js' ),
+			array( 'stripe' ),
+			Loader::get_file_version( 'stripe.js' ),
+			true
+		);
+	}
+
+	/**
+	 * Load scripts.
+	 * @return [type] [description]
+	 */
+	public function load_scripts() {
+		wp_enqueue_script( 'edd_stripe' );
+	}
+
+	/**
+	 * Process the purchase and create the charge in Stripe.
+	 * @param  [type] $purchase_data [description]
+	 * @return [type]                [description]
+	 */
+	public function process_purchase( $purchase_data ) {
+		edd_debug_log( 'PayPal IPN endpoint loaded' );
+		edd_set_error( 'missing_reference_id', __( 'Missing Reference ID, please try again', 'edd-gateway-stripe' ) );
+		$errors = edd_get_errors();
+		if ( $errors ) {
+			edd_send_back_to_checkout( '?payment-mode=stripe' );
+		}
+	}
+
+	/**
+	 * [get_cc_form description]
+	 * @return [type] [description]
+	 */
+	public function get_cc_form() {
+		ob_start(); ?>
+
+		<?php do_action( 'edd_before_cc_fields' ); ?>
+
+		<fieldset id="edd_cc_fields" class="edd-do-validate">
+			<legend><?php _e( 'Credit Card Info', 'easy-digital-downloads' ); ?></legend>
+			<?php if ( is_ssl() ) : ?>
+				<div id="edd_secure_site_wrapper">
+					<span class="padlock">
+						<svg class="edd-icon edd-icon-lock" xmlns="http://www.w3.org/2000/svg" width="18" height="28" viewBox="0 0 18 28" aria-hidden="true">
+							<path d="M5 12h8V9c0-2.203-1.797-4-4-4S5 6.797 5 9v3zm13 1.5v9c0 .828-.672 1.5-1.5 1.5h-15C.672 24 0 23.328 0 22.5v-9c0-.828.672-1.5 1.5-1.5H2V9c0-3.844 3.156-7 7-7s7 3.156 7 7v3h.5c.828 0 1.5.672 1.5 1.5z"/>
+						</svg>
+					</span>
+					<span><?php _e( 'This is a secure SSL encrypted payment.', 'easy-digital-downloads' ); ?></span>
+				</div>
+			<?php endif; ?>
+			<p id="edd-card-number-wrap">
+				<label for="card_number" class="edd-label">
+					<?php _e( 'Card Number', 'easy-digital-downloads' ); ?>
+					<span class="edd-required-indicator">*</span>
+					<span class="card-type"></span>
+				</label>
+				<span class="edd-description"><?php _e( 'The (typically) 16 digits on the front of your credit card.', 'easy-digital-downloads' ); ?></span>
+				<div id="stripe-card-element" class="wc-stripe-elements-field">
+				<!-- a Stripe Element will be inserted here. -->
+				</div>
+			</p>
+
+			<?php do_action( 'edd_before_cc_expiration' ); ?>
+			<p class="card-expiration">
+				<label for="card_exp_month" class="edd-label">
+					<?php _e( 'Expiration (MM/YY)', 'easy-digital-downloads' ); ?>
+					<span class="edd-required-indicator">*</span>
+				</label>
+				<span class="edd-description"><?php _e( 'The date your credit card expires, typically on the front of the card.', 'easy-digital-downloads' ); ?></span>
+				<div id="stripe-exp-element" class="wc-stripe-elements-field">
+				<!-- a Stripe Element will be inserted here. -->
+				</div>
+			</p>
+			<?php do_action( 'edd_after_cc_expiration' ); ?>
+
+			<p id="edd-card-cvc-wrap">
+				<label for="card_cvc" class="edd-label">
+					<?php _e( 'CVC', 'easy-digital-downloads' ); ?>
+					<span class="edd-required-indicator">*</span>
+				</label>
+				<span class="edd-description"><?php _e( 'The 3 digit (back) or 4 digit (front) value on your card.', 'easy-digital-downloads' ); ?></span>
+				<div id="stripe-cvc-element" class="wc-stripe-elements-field">
+				<!-- a Stripe Element will be inserted here. -->
+				</div>
+			</p>
+
+		</fieldset>
+		<?php
+		// do_action( 'edd_after_cc_fields' );
+
+		echo ob_get_clean();
 	}
 
 }
