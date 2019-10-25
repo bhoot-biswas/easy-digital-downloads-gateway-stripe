@@ -93,6 +93,7 @@ class GatewayStripe {
 	public function filters() {
 		if ( is_admin() ) {
 			add_filter( 'edd_settings_sections_gateways', array( $this, 'register_gateway_section' ), 1, 1 );
+			add_filter( 'edd_settings_gateways', array( $this, 'register_gateway_settings' ), 1, 1 );
 		}
 	}
 
@@ -105,6 +106,69 @@ class GatewayStripe {
 		$gateway_sections['stripe'] = __( 'Stripe Payments', 'easy-digital-downloads' );
 
 		return $gateway_sections;
+	}
+
+	/**
+	 * Register the gateway settings.
+	 * @param  [type] $gateway_settings [description]
+	 * @return [type]                   [description]
+	 */
+	public function register_gateway_settings( $gateway_settings ) {
+		$default_stripe_settings = array(
+			'stripe'                      => array(
+				'id'   => 'stripe',
+				'name' => '<strong>' . __( 'Stripe Payments Settings', 'easy-digital-downloads' ) . '</strong>',
+				'type' => 'header',
+			),
+			'stripe_testmode'             => array(
+				'id'   => 'stripe_testmode',
+				'name' => __( 'Enable Test Mode', 'woocommerce-gateway-stripe' ),
+				'desc' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-gateway-stripe' ),
+				'type' => 'checkbox',
+				'std'  => 1,
+			),
+			'stripe_test_publishable_key' => array(
+				'id'   => 'stripe_test_publishable_key',
+				'name' => __( 'Test Publishable Key', 'woocommerce-gateway-stripe' ),
+				'desc' => __( 'Get your API keys from your stripe account.', 'woocommerce-gateway-stripe' ),
+				'type' => 'text',
+				'std'  => '',
+			),
+			'stripe_test_secret_key'      => array(
+				'id'   => 'stripe_test_secret_key',
+				'name' => __( 'Test Secret Key', 'woocommerce-gateway-stripe' ),
+				'desc' => __( 'Get your API keys from your stripe account.', 'woocommerce-gateway-stripe' ),
+				'type' => 'password',
+				'std'  => '',
+			),
+			'stripe_publishable_key'      => array(
+				'id'   => 'stripe_publishable_key',
+				'name' => __( 'Live Publishable Key', 'woocommerce-gateway-stripe' ),
+				'desc' => __( 'Get your API keys from your stripe account.', 'woocommerce-gateway-stripe' ),
+				'type' => 'text',
+				'std'  => '',
+			),
+			'stripe_secret_key'           => array(
+				'id'   => 'stripe_secret_key',
+				'name' => __( 'Live Secret Key', 'woocommerce-gateway-stripe' ),
+				'desc' => __( 'Get your API keys from your stripe account.', 'woocommerce-gateway-stripe' ),
+				'type' => 'password',
+				'std'  => '',
+			),
+			'stripe_capture'              => array(
+				'id'    => 'stripe_capture',
+				'name'  => __( 'Capture', 'woocommerce-gateway-stripe' ),
+				'label' => __( 'Capture charge immediately', 'woocommerce-gateway-stripe' ),
+				'desc'  => __( 'Whether or not to immediately capture the charge. When unchecked, the charge issues an authorization and will need to be captured later. Uncaptured charges expire in 7 days.', 'woocommerce-gateway-stripe' ),
+				'type'  => 'checkbox',
+				'std'   => 1,
+			),
+		);
+
+		$default_stripe_settings    = apply_filters( 'edd_default_stripe_settings', $default_stripe_settings );
+		$gateway_settings['stripe'] = $default_stripe_settings;
+
+		return $gateway_settings;
 	}
 
 	/**
@@ -125,5 +189,20 @@ class GatewayStripe {
 		}
 
 		return $this->is_setup;
+	}
+
+	/**
+	 * Retrieve the URL for connecting Amazon account to EDD
+	 * @return [type] [description]
+	 */
+	private function get_registration_url() {
+		$base_url = 'https://payments.amazon.com/register';
+
+		$query_args = array(
+			'registration_source' => 'SPPD',
+			'spId'                => 'A3JST9YM1SX7LB',
+		);
+
+		return add_query_arg( $query_args, $base_url );
 	}
 }
