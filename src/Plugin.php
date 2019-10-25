@@ -187,20 +187,6 @@ class Plugin {
 	}
 
 	/**
-	 * Process the purchase and create the charge in Stripe.
-	 * @param  [type] $purchase_data [description]
-	 * @return [type]                [description]
-	 */
-	public function process_purchase( $purchase_data ) {
-		edd_debug_log( 'PayPal IPN endpoint loaded' );
-		edd_set_error( 'missing_reference_id', __( 'Missing Reference ID, please try again', 'edd-gateway-stripe' ) );
-		$errors = edd_get_errors();
-		if ( $errors ) {
-			edd_send_back_to_checkout( '?payment-mode=stripe' );
-		}
-	}
-
-	/**
 	 * Define constant if not already set.
 	 *
 	 * @param string      $name  Constant name.

@@ -35,4 +35,4 @@ module.exports = __webpack_require__(/*! C:\xampp\htdocs\wp\edd\wp-content\plugi
 
 /***/ })
 
-},[[0,"/manifest","/vendor"]]]);
+},[[0,"/manifest"]]]);

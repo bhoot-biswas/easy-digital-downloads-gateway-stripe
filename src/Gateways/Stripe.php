@@ -221,7 +221,7 @@ class Stripe {
 		wp_register_script(
 			'edd_stripe',
 			Loader::get_url( 'stripe.js' ),
-			array( 'stripe' ),
+			array( 'jquery', 'stripe' ),
 			Loader::get_file_version( 'stripe.js' ),
 			true
 		);
