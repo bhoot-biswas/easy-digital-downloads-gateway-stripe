@@ -97,8 +97,8 @@ class Plugin {
 			add_action( 'admin_notices', array( $this, 'render_build_notice' ) );
 		}
 
-		$this->includes();
-		$this->hooks();
+		// Let's roll.
+		$this->load();
 	}
 
 	/**
@@ -109,20 +109,11 @@ class Plugin {
 	}
 
 	/**
-	 * Include WC Admin classes.
+	 * Load classes.
 	 */
-	public function includes() {}
-
-	/**
-	 * Removes core hooks in favor of our local feature plugin handlers.
-	 *
-	 * @see WC_Admin_Library::__construct()
-	 */
-	protected function hooks() {
-		new Loader();
-
-		add_filter( 'edd_payment_gateways', array( $this, 'register_gateway' ) );
-		add_action( 'edd_gateway_stripe', array( $this, 'process_purchase' ) );
+	public function load() {
+		Loader::instance();
+		GatewayStripe::instance();
 	}
 
 	/**
@@ -193,26 +184,6 @@ class Plugin {
 			'https://github.com/BegnalStudio/edd-gateway-stripe/releases'
 		);
 		printf( '<div class="error"><p>%s %s</p></div>', $message_one, $message_two ); /* WPCS: xss ok. */
-	}
-
-	/**
-	 * Register the gateway.
-	 */
-	public function register_gateway( $gateways ) {
-
-		$default_stripe_info = array(
-			self::GATEWAY_ID => array(
-				'admin_label'    => __( 'Stripe', 'edd-gateway-stripe' ),
-				'checkout_label' => __( 'Credit Card (Stripe)', 'edd-gateway-stripe' ),
-				'supports'       => array(),
-			),
-		);
-
-		$default_stripe_info = apply_filters( 'edd_register_stripe_gateway', $default_stripe_info );
-		$gateways            = array_merge( $gateways, $default_stripe_info );
-
-		return $gateways;
-
 	}
 
 	/**

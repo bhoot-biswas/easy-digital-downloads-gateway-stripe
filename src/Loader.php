@@ -42,7 +42,7 @@ class Loader {
 	/**
 	 * Class constructor.
 	 */
-	public function __construct() {
+	private function __construct() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
 	}
