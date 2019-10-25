@@ -20,36 +20,27 @@ class Plugin {
 
 	/**
 	 * The single instance of the class.
-	 *
-	 * @var object
+	 * @var [type]
 	 */
-	protected static $instance = null;
-
-
-	/**
-	 * Gateway ID.
-	 * @var string
-	 */
-	const GATEWAY_ID = 'stripe';
-
-	/**
-	 * Constructor
-	 *
-	 * @return void
-	 */
-	protected function __construct() {}
+	private static $instance;
 
 	/**
 	 * Get class instance.
-	 *
-	 * @return object Instance.
+	 * @return [type] [description]
 	 */
-	final public static function instance() {
+	public static function instance() {
 		if ( null === static::$instance ) {
 			static::$instance = new static();
 		}
+
 		return static::$instance;
 	}
+
+	/**
+	 * is not allowed to call from outside to prevent from creating multiple instances,
+	 * to use the singleton, you have to obtain the instance from Singleton::getInstance() instead
+	 */
+	private function __construct() {}
 
 	/**
 	 * Init the feature plugin, only if we can detect both Gutenberg and Easy Digital Downloads.
@@ -128,9 +119,9 @@ class Plugin {
 	 * @see WC_Admin_Library::__construct()
 	 */
 	protected function hooks() {
-		// Register the payment gateway.
-		add_filter( 'edd_payment_gateways', array( $this, 'register_gateway' ), 1, 1 );
-		// Process purchase.
+		new Loader();
+
+		add_filter( 'edd_payment_gateways', array( $this, 'register_gateway' ) );
 		add_action( 'edd_gateway_stripe', array( $this, 'process_purchase' ) );
 	}
 
@@ -155,7 +146,7 @@ class Plugin {
 	 * @return bool
 	 */
 	protected function check_build() {
-		return file_exists( plugin_dir_path( __DIR__ ) . '/dist/app/index.js' );
+		return file_exists( plugin_dir_path( __DIR__ ) . '/dist/app.js' );
 	}
 
 	/**
@@ -205,18 +196,6 @@ class Plugin {
 	}
 
 	/**
-	 * Define constant if not already set.
-	 *
-	 * @param string      $name  Constant name.
-	 * @param string|bool $value Constant value.
-	 */
-	protected function define( $name, $value ) {
-		if ( ! defined( $name ) ) {
-			define( $name, $value );
-		}
-	}
-
-	/**
 	 * Register the gateway.
 	 */
 	public function register_gateway( $gateways ) {
@@ -242,10 +221,23 @@ class Plugin {
 	 * @return [type]                [description]
 	 */
 	public function process_purchase( $purchase_data ) {
+		edd_debug_log( 'PayPal IPN endpoint loaded' );
 		edd_set_error( 'missing_reference_id', __( 'Missing Reference ID, please try again', 'edd-gateway-stripe' ) );
 		$errors = edd_get_errors();
 		if ( $errors ) {
 			edd_send_back_to_checkout( '?payment-mode=stripe' );
+		}
+	}
+
+	/**
+	 * Define constant if not already set.
+	 *
+	 * @param string      $name  Constant name.
+	 * @param string|bool $value Constant value.
+	 */
+	protected function define( $name, $value ) {
+		if ( ! defined( $name ) ) {
+			define( $name, $value );
 		}
 	}
 
