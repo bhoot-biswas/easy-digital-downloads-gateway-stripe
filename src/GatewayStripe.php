@@ -91,7 +91,20 @@ class GatewayStripe {
 	 * @return [type] [description]
 	 */
 	public function filters() {
+		if ( is_admin() ) {
+			add_filter( 'edd_settings_sections_gateways', array( $this, 'register_gateway_section' ), 1, 1 );
+		}
+	}
 
+	/**
+	 * Register the payment gateways setting section.
+	 * @param  [type] $gateway_sections [description]
+	 * @return [type]                   [description]
+	 */
+	public function register_gateway_section( $gateway_sections ) {
+		$gateway_sections['stripe'] = __( 'Stripe Payments', 'easy-digital-downloads' );
+
+		return $gateway_sections;
 	}
 
 	/**
@@ -110,5 +123,7 @@ class GatewayStripe {
 		if ( null !== $this->is_setup ) {
 			return $this->is_setup;
 		}
+
+		return $this->is_setup;
 	}
 }
