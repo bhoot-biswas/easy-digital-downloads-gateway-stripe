@@ -15,7 +15,7 @@
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
-use BengalStudio\EDD\GatewayStripe\Plugin;
+use BengalStudio\EDD\Stripe\Plugin;
 
 /**
  * Autoload packages.

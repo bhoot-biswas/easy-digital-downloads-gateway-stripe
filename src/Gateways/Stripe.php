@@ -1,13 +1,15 @@
 <?php
-namespace BengalStudio\EDD\GatewayStripe;
+namespace BengalStudio\EDD\Stripe\Gateways;
 
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
+use BengalStudio\EDD\Stripe\API;
+
 /**
  * GatewayStripe class.
  */
-class GatewayStripe {
+class Stripe {
 
 	/**
 	 * Define variables.
@@ -84,6 +86,13 @@ class GatewayStripe {
 		if ( ! $this->is_setup() ) {
 			return;
 		}
+
+		$config = array(
+			'secret_key'      => edd_is_test_mode() ? edd_get_option( 'stripe_test_secret_key', '' ) : edd_get_option( 'stripe_secret_key', '' ),
+			'publishable_key' => edd_is_test_mode() ? edd_get_option( 'stripe_test_publishable_key', '' ) : edd_get_option( 'stripe_publishable_key', '' ),
+		);
+
+		API::set_secret_key( $config['secret_key'] );
 	}
 
 	/**
@@ -119,13 +128,6 @@ class GatewayStripe {
 				'id'   => 'stripe',
 				'name' => '<strong>' . __( 'Stripe Payments Settings', 'easy-digital-downloads' ) . '</strong>',
 				'type' => 'header',
-			),
-			'stripe_testmode'             => array(
-				'id'   => 'stripe_testmode',
-				'name' => __( 'Enable Test Mode', 'woocommerce-gateway-stripe' ),
-				'desc' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-gateway-stripe' ),
-				'type' => 'checkbox',
-				'std'  => 1,
 			),
 			'stripe_test_publishable_key' => array(
 				'id'   => 'stripe_test_publishable_key',
@@ -175,9 +177,7 @@ class GatewayStripe {
 	 * Add actions.
 	 * @return [type] [description]
 	 */
-	public function actions() {
-
-	}
+	public function actions() {}
 
 	/**
 	 * [is_setup description]
@@ -188,21 +188,23 @@ class GatewayStripe {
 			return $this->is_setup;
 		}
 
+		$required_items = array( 'secret_key', 'publishable_key' );
+
+		$current_values = array(
+			'secret_key'      => edd_is_test_mode() ? edd_get_option( 'stripe_test_secret_key', '' ) : edd_get_option( 'stripe_secret_key', '' ),
+			'publishable_key' => edd_is_test_mode() ? edd_get_option( 'stripe_test_publishable_key', '' ) : edd_get_option( 'stripe_publishable_key', '' ),
+		);
+
+		$this->is_setup = true;
+
+		foreach ( $required_items as $key ) {
+			if ( empty( $current_values[ $key ] ) ) {
+				$this->is_setup = false;
+				break;
+			}
+		}
+
 		return $this->is_setup;
 	}
 
-	/**
-	 * Retrieve the URL for connecting Amazon account to EDD
-	 * @return [type] [description]
-	 */
-	private function get_registration_url() {
-		$base_url = 'https://payments.amazon.com/register';
-
-		$query_args = array(
-			'registration_source' => 'SPPD',
-			'spId'                => 'A3JST9YM1SX7LB',
-		);
-
-		return add_query_arg( $query_args, $base_url );
-	}
 }

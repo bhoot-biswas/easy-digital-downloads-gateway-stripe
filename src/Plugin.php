@@ -5,7 +5,7 @@
  * @package EDD Gateway Stripe
  */
 
-namespace BengalStudio\EDD\GatewayStripe;
+namespace BengalStudio\EDD\Stripe;
 
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
@@ -113,7 +113,7 @@ class Plugin {
 	 */
 	public function load() {
 		Loader::instance();
-		GatewayStripe::instance();
+		Gateways\Stripe::instance();
 	}
 
 	/**

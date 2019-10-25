@@ -8,7 +8,7 @@
 	"require": {},
 	"autoload": {
 		"psr-4": {
-			"BengalStudio\\EDD\\GatewayStripe\\": "src/"
+			"BengalStudio\\EDD\\Stripe\\": "src/"
 		}
 	}
 }
