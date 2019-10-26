@@ -104,7 +104,7 @@ class Loader {
 	public static function get_file_version( $file ) {
 		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
 			$file = trim( $file, '/' );
-			return filemtime( EDD_GATEWAY_STRIPE_ABSPATH . self::get_path( $file ) );
+			return filemtime( EDD_GATEWAY_STRIPE_ABSPATH . self::get_path( $file ) . $file );
 		}
 		return EDD_GATEWAY_STRIPE_VERSION_NUMBER;
 	}

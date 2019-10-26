@@ -30,17 +30,25 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
       }
 
       this.elements = this.stripe.elements();
+      this.onSubmit = this.onSubmit.bind(this);
+      this.createElements = this.createElements.bind(this);
+      this.sourceResponse = this.sourceResponse.bind(this);
       this.init();
     }
 
     _createClass(EDD_Gateway_Stripe, [{
       key: "init",
       value: function init() {
-        var $body = $(document.body);
-        var $this = this;
-        $body.on('edd_gateway_loaded', function () {
-          $this.createElements();
-        });
+        var body = $(document.body);
+        var eddPurchaseform = $(document.getElementById('edd_purchase_form'));
+
+        if (!$(eddPurchaseform).length) {
+          return;
+        }
+
+        this.form = eddPurchaseform;
+        this.form.on('submit', this.onSubmit);
+        body.on('edd_gateway_loaded', this.createElements);
       }
     }, {
       key: "createElements",
@@ -66,15 +74,15 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
         };
 
         if (typeof this.stripe_card === 'undefined') {
-          this.stripe_card = this.elements.create('cardNumber', {
+          this.stripeCard = this.elements.create('cardNumber', {
             style: elementStyles,
             classes: elementClasses
           });
-          this.stripe_exp = this.elements.create('cardExpiry', {
+          this.stripeExp = this.elements.create('cardExpiry', {
             style: elementStyles,
             classes: elementClasses
           });
-          this.stripe_cvc = this.elements.create('cardCvc', {
+          this.stripeCvc = this.elements.create('cardCvc', {
             style: elementStyles,
             classes: elementClasses
           });
@@ -85,9 +93,85 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
     }, {
       key: "mountElements",
       value: function mountElements() {
-        this.stripe_card.mount('#stripe-card-element');
-        this.stripe_exp.mount('#stripe-exp-element');
-        this.stripe_cvc.mount('#stripe-cvc-element');
+        this.stripeCard.mount('#stripe-card-element');
+        this.stripeExp.mount('#stripe-exp-element');
+        this.stripeCvc.mount('#stripe-cvc-element');
+      }
+    }, {
+      key: "onSubmit",
+      value: function onSubmit() {
+        if (!this.isStripeChosen()) {
+          return true;
+        } // If a source is already in place, submit the form as usual.
+
+
+        if (this.hasSource()) {// return true;
+        }
+
+        this.createSource();
+        return false;
+      }
+    }, {
+      key: "isStripeChosen",
+      value: function isStripeChosen() {
+        return $('#edd-gateway-stripe').is(':checked');
+      }
+      /**
+       * Checks if a source ID is present as a hidden input.
+       * Only used when SEPA Direct Debit is chosen.
+       *
+       * @return {boolean}
+       */
+
+    }, {
+      key: "hasSource",
+      value: function hasSource() {
+        return 0 < $('input.stripe-source').length;
+      }
+      /**
+       * Initiates the creation of a Source object.
+       *
+       * Currently this is only used for credit cards and SEPA Direct Debit,
+       * all other payment methods work with redirects to create sources.
+       */
+
+    }, {
+      key: "createSource",
+      value: function createSource() {
+        var billingDetails = this.getBillingDetails(); // Handle card payments.
+
+        return this.stripe.createSource(this.stripeCard, billingDetails).then(this.sourceResponse);
+      }
+      /**
+       * Handles responses, based on source object.
+       *
+       * @param {Object} response The `stripe.createSource` response.
+       */
+
+    }, {
+      key: "sourceResponse",
+      value: function sourceResponse(response) {
+        if (response.error) {
+          return $(document.body).trigger('stripeError', response);
+        }
+
+        this.reset();
+        this.form.append($('<input type="hidden" />').addClass('stripe-source').attr('name', 'stripe_source').val(response.source.id));
+        console.log(response.source.id); // this.form.submit();
+      }
+    }, {
+      key: "getBillingDetails",
+      value: function getBillingDetails() {
+        return {};
+      }
+      /**
+       * Removes all Stripe errors and hidden fields with IDs from the form.
+       */
+
+    }, {
+      key: "reset",
+      value: function reset() {
+        $('.edd_errors, .stripe-source').remove();
       }
     }]);
 

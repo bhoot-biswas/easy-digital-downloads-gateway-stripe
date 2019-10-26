@@ -182,6 +182,8 @@ class Stripe {
 	public function actions() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
+		add_action( 'edd_checkout_error_checks', array( $this, 'checkout_error_checks' ) );
+		add_action( 'edd_gateway_stripe', array( $this, 'process_purchase' ) );
 	}
 
 	/**
@@ -233,6 +235,15 @@ class Stripe {
 	 */
 	public function load_scripts() {
 		wp_enqueue_script( 'edd_stripe' );
+	}
+
+	/**
+	 * [checkout_error_checks description]
+	 * @return [type] [description]
+	 */
+	public function checkout_error_checks() {
+		// edd_set_error( 'missing_reference_id', __( 'Missing Reference ID, please try again', 'edd-gateway-stripe' ) );
+		// edd_die();
 	}
 
 	/**
