@@ -53,6 +53,8 @@
 				invalid: 'invalid',
 			};
 
+			const self = this;
+
 			if (typeof this.stripe_card === 'undefined') {
 				this.stripeCard = this.elements.create('cardNumber', {
 					style: elementStyles,
@@ -65,6 +67,25 @@
 				this.stripeCvc = this.elements.create('cardCvc', {
 					style: elementStyles,
 					classes: elementClasses
+				});
+				this.stripeCard.addEventListener('change', function(event) {
+					self.onCCFormChange();
+					self.updateCardBrand(event.brand);
+					if (event.error) {
+						$(document.body).trigger('stripeError', event);
+					}
+				});
+				this.stripeExp.addEventListener('change', function(event) {
+					self.onCCFormChange();
+					if (event.error) {
+						$(document.body).trigger('stripeError', event);
+					}
+				});
+				this.stripeCvc.addEventListener('change', function(event) {
+					self.onCCFormChange();
+					if (event.error) {
+						$(document.body).trigger('stripeError', event);
+					}
 				});
 			}
 
@@ -84,7 +105,7 @@
 
 			// If a source is already in place, submit the form as usual.
 			if (this.hasSource()) {
-				// return true;
+				return true;
 			}
 
 			this.createSource();
@@ -136,9 +157,7 @@
 				.val(response.source.id)
 			)
 
-			console.log(response.source.id);
-
-			// this.form.submit();
+			this.form.submit();
 		}
 
 		getBillingDetails() {
@@ -146,10 +165,49 @@
 		}
 
 		/**
+		 * If a new credit card is entered, reset sources.
+		 */
+		onCCFormChange() {
+			this.reset();
+		}
+		/**
+		 * Updates the card brand logo with non-inline CC forms.
+		 *
+		 * @param {string} brand The identifier of the chosen brand.
+		 */
+		updateCardBrand(brand) {
+			const brandClass = {
+				'visa': 'stripe-visa-brand',
+				'mastercard': 'stripe-mastercard-brand',
+				'amex': 'stripe-amex-brand',
+				'discover': 'stripe-discover-brand',
+				'diners': 'stripe-diners-brand',
+				'jcb': 'stripe-jcb-brand',
+				'unknown': 'stripe-credit-card-brand'
+			};
+
+			let imageElement = $(document.getElementsByClassName('stripe-card-brand'));
+			let imageClass = 'stripe-credit-card-brand';
+
+			if (brand in brandClass) {
+				imageClass = brandClass[brand];
+			}
+
+			// Remove existing card brand class.
+			$.each(brandClass, function(index, el) {
+				imageElement.removeClass(el);
+			});
+
+			imageElement.addClass(imageClass);
+		}
+
+		/**
 		 * Removes all Stripe errors and hidden fields with IDs from the form.
 		 */
 		reset() {
+			$('.edd-loading-ajax').remove();
 			$('.edd_errors, .stripe-source').remove();
+			$('.edd-error').hide();
 		}
 	}
 

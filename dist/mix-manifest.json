@@ -1,7 +1,8 @@
 {
-    "/app.js": "/app.js?id=afe9bbc4ae632fdd2d80",
+    "/app.js": "/app.js?id=bd4ac53603deb36b9ea5",
     "/screen.css": "/screen.css?id=d41d8cd98f00b204e980",
+    "/stripe.css": "/stripe.css?id=fe44493a088b23580007",
     "/manifest.js": "/manifest.js?id=d9708e48a6c10ccee4bb",
-    "/stripe.js": "/stripe.js?id=ad64d24c8a5c38103dfd",
+    "/stripe.js": "/stripe.js?id=b5cc64e44f3cecbddb3c",
     "/vendor.js": "/vendor.js?id=856e4ab4e3f69ce40edb"
 }

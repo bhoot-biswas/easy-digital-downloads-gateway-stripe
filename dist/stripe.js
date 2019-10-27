@@ -72,6 +72,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
           empty: 'empty',
           invalid: 'invalid'
         };
+        var self = this;
 
         if (typeof this.stripe_card === 'undefined') {
           this.stripeCard = this.elements.create('cardNumber', {
@@ -85,6 +86,28 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
           this.stripeCvc = this.elements.create('cardCvc', {
             style: elementStyles,
             classes: elementClasses
+          });
+          this.stripeCard.addEventListener('change', function (event) {
+            self.onCCFormChange();
+            self.updateCardBrand(event.brand);
+
+            if (event.error) {
+              $(document.body).trigger('stripeError', event);
+            }
+          });
+          this.stripeExp.addEventListener('change', function (event) {
+            self.onCCFormChange();
+
+            if (event.error) {
+              $(document.body).trigger('stripeError', event);
+            }
+          });
+          this.stripeCvc.addEventListener('change', function (event) {
+            self.onCCFormChange();
+
+            if (event.error) {
+              $(document.body).trigger('stripeError', event);
+            }
           });
         }
 
@@ -105,7 +128,8 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
         } // If a source is already in place, submit the form as usual.
 
 
-        if (this.hasSource()) {// return true;
+        if (this.hasSource()) {
+          return true;
         }
 
         this.createSource();
@@ -157,12 +181,52 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
         this.reset();
         this.form.append($('<input type="hidden" />').addClass('stripe-source').attr('name', 'stripe_source').val(response.source.id));
-        console.log(response.source.id); // this.form.submit();
+        this.form.submit();
       }
     }, {
       key: "getBillingDetails",
       value: function getBillingDetails() {
         return {};
+      }
+      /**
+       * If a new credit card is entered, reset sources.
+       */
+
+    }, {
+      key: "onCCFormChange",
+      value: function onCCFormChange() {
+        this.reset();
+      }
+      /**
+       * Updates the card brand logo with non-inline CC forms.
+       *
+       * @param {string} brand The identifier of the chosen brand.
+       */
+
+    }, {
+      key: "updateCardBrand",
+      value: function updateCardBrand(brand) {
+        var brandClass = {
+          'visa': 'stripe-visa-brand',
+          'mastercard': 'stripe-mastercard-brand',
+          'amex': 'stripe-amex-brand',
+          'discover': 'stripe-discover-brand',
+          'diners': 'stripe-diners-brand',
+          'jcb': 'stripe-jcb-brand',
+          'unknown': 'stripe-credit-card-brand'
+        };
+        var imageElement = $(document.getElementsByClassName('stripe-card-brand'));
+        var imageClass = 'stripe-credit-card-brand';
+
+        if (brand in brandClass) {
+          imageClass = brandClass[brand];
+        } // Remove existing card brand class.
+
+
+        $.each(brandClass, function (index, el) {
+          imageElement.removeClass(el);
+        });
+        imageElement.addClass(imageClass);
       }
       /**
        * Removes all Stripe errors and hidden fields with IDs from the form.
@@ -171,7 +235,9 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
     }, {
       key: "reset",
       value: function reset() {
+        $('.edd-loading-ajax').remove();
         $('.edd_errors, .stripe-source').remove();
+        $('.edd-error').hide();
       }
     }]);
 

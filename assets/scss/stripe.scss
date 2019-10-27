@@ -1,0 +1,40 @@
+#edd_checkout_wrap {
+	.stripe-card-brand {
+		position: absolute;
+		top: 50%;
+		margin-top: -10px;
+		right: 10px;
+		background: no-repeat url("./images/credit-card.svg");
+		display: block;
+		width: 30px;
+		height: 24px;
+	}
+
+	.stripe-visa-brand {
+		background: no-repeat url("./images/visa.svg");
+	}
+
+	.stripe-amex-brand {
+		background: no-repeat url("./images/amex.svg");
+	}
+
+	.stripe-diners-brand {
+		background: no-repeat url("./images/diners.svg");
+	}
+
+	.stripe-discover-brand {
+		background: no-repeat url("./images/discover.svg");
+	}
+
+	.stripe-jcb-brand {
+		background: no-repeat url("./images/jcb.svg");
+	}
+
+	.stripe-maestro-brand {
+		background: no-repeat url("./images/maestro.svg");
+	}
+
+	.stripe-mastercard-brand {
+		background: no-repeat url("./images/mastercard.svg");
+	}
+}

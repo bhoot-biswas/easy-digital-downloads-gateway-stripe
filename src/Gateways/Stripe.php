@@ -227,6 +227,13 @@ class Stripe {
 			Loader::get_file_version( 'stripe.js' ),
 			true
 		);
+
+		wp_register_style(
+			'edd_stripe',
+			Loader::get_url( 'stripe.css' ),
+			array(),
+			Loader::get_file_version( 'stripe.css' )
+		);
 	}
 
 	/**
@@ -235,6 +242,7 @@ class Stripe {
 	 */
 	public function load_scripts() {
 		wp_enqueue_script( 'edd_stripe' );
+		wp_enqueue_style( 'edd_stripe' );
 	}
 
 	/**
@@ -252,7 +260,7 @@ class Stripe {
 	 * @return [type]                [description]
 	 */
 	public function process_purchase( $purchase_data ) {
-		edd_debug_log( 'PayPal IPN endpoint loaded' );
+		edd_debug_log( $_POST['stripe_source'] );
 		edd_set_error( 'missing_reference_id', __( 'Missing Reference ID, please try again', 'edd-gateway-stripe' ) );
 		$errors = edd_get_errors();
 		if ( $errors ) {
@@ -291,6 +299,7 @@ class Stripe {
 				<div id="stripe-card-element" class="wc-stripe-elements-field">
 				<!-- a Stripe Element will be inserted here. -->
 				</div>
+				<i class="stripe-credit-card-brand stripe-card-brand" alt="Credit Card"></i>
 			</p>
 
 			<?php do_action( 'edd_before_cc_expiration' ); ?>
