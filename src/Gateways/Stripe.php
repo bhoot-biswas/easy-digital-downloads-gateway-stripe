@@ -291,6 +291,9 @@ class Stripe {
 					<span><?php _e( 'This is a secure SSL encrypted payment.', 'easy-digital-downloads' ); ?></span>
 				</div>
 			<?php endif; ?>
+			<?php if ( edd_is_test_mode() ) : ?>
+				<?php printf( __( 'TEST MODE ENABLED. In test mode, you can use the card number 4242424242424242 with any CVC and a valid expiration date or check the <a href="%s" target="_blank">Testing Stripe documentation</a> for more card numbers.', 'edd-gateway-stripe' ), 'https://stripe.com/docs/testing' ); ?>
+			<?php endif; ?>
 			<p id="edd-card-number-wrap">
 				<label for="card_number" class="edd-label">
 					<?php _e( 'Card Number', 'easy-digital-downloads' ); ?>
