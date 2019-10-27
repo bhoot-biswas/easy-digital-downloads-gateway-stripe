@@ -260,8 +260,10 @@ class Stripe {
 	 * @return [type]                [description]
 	 */
 	public function process_purchase( $purchase_data ) {
-		edd_debug_log( $_POST['stripe_source'] );
-		edd_set_error( 'missing_reference_id', __( 'Missing Reference ID, please try again', 'edd-gateway-stripe' ) );
+		if ( empty( $purchase_data['post_data']['stripe_source'] ) ) {
+			edd_set_error( 'missing_source_id', __( 'Missing Source ID, please try again', 'easy-digital-downloads' ) );
+		}
+
 		$errors = edd_get_errors();
 		if ( $errors ) {
 			edd_send_back_to_checkout( '?payment-mode=stripe' );
