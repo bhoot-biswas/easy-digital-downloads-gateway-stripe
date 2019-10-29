@@ -308,6 +308,11 @@ class Stripe extends StripePayments {
 			$payment_intent = $this->create_payment_intent( $payment_id, $prepared_source, $purchase_data );
 		}
 
+		// Confirm payment intent.
+		if ( empty( $intent->error ) ) {
+			$payment_intent = $this->confirm_payment_intent( $payment_intent, $payment_id, $prepared_source );
+		}
+
 		edd_debug_log( print_r( $payment_intent, true ) );
 
 		// Problems? send back

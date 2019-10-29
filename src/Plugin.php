@@ -97,6 +97,8 @@ class Plugin {
 			add_action( 'admin_notices', array( $this, 'render_build_notice' ) );
 		}
 
+		// edd_debug_log( print_r( edd_get_option( 'stripe_capture', false ), true ) );
+
 		// Let's roll.
 		$this->load();
 	}

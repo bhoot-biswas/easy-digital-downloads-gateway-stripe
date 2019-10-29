@@ -106,7 +106,7 @@ abstract class StripePayments {
 				__( 'customer_email', 'edd-gateway-stripe' ) => sanitize_email( $customer->email ),
 				'payment_id' => $payment_id,
 			),
-			'capture_method'       => ( 'true' === edd_get_option( 'stripe_capture', true ) ) ? 'automatic' : 'manual',
+			'capture_method'       => edd_get_option( 'stripe_capture', false ) ? 'automatic' : 'manual',
 			'payment_method_types' => array(
 				'card',
 			),
@@ -156,6 +156,39 @@ abstract class StripePayments {
 		}
 
 		return StripeAPI::request( $request, "payment_intents/$payment_intent->id" );
+	}
+
+	/**
+	 * Confirms an intent if it is the `requires_confirmation` state.
+	 * @param  [type] $payment_intent  [description]
+	 * @param  [type] $payment_id      [description]
+	 * @param  [type] $prepared_source [description]
+	 * @return [type]                  [description]
+	 */
+	public function confirm_payment_intent( $payment_intent, $payment_id, $prepared_source ) {
+		// Exit early.
+		if ( 'requires_confirmation' !== $payment_intent->status ) {
+			return $payment_intent;
+		}
+
+		// Try to confirm the intent & capture the charge (if 3DS is not required).
+		$request = array(
+			'source' => $prepared_source->source,
+		);
+
+		$payment_intent_confirmed = StripeAPI::request( $request, "payment_intents/$payment_intent->id/confirm" );
+		if ( ! empty( $payment_intent_confirmed->error ) ) {
+			return $payment_intent_confirmed;
+		}
+
+		// Save a note about the status of the intent.
+		if ( 'succeeded' === $payment_intent_confirmed->status ) {
+			edd_debug_log( "Stripe PaymentIntent $payment_intent->id succeeded for order $payment_id" );
+		} elseif ( 'requires_action' === $payment_intent_confirmed->status ) {
+			edd_debug_log( "Stripe PaymentIntent $payment_intent->id requires authentication for order $payment_id" );
+		}
+
+		return $payment_intent_confirmed;
 	}
 
 }
