@@ -300,8 +300,13 @@ class Stripe extends StripePayments {
 		// Prepare source.
 		$prepared_source = $this->prepare_source( $payment_id, $purchase_data );
 
-		// Create payment intent.
-		$payment_intent = $this->create_intent( $payment_id, $prepared_source, $purchase_data );
+		// Update or create payment intent.
+		$payment_intent = $this->get_payment_intent( $payment_id );
+		if ( $payment_intent ) {
+			$payment_intent = $this->update_payment_intent( $payment_intent, $prepared_source, $purchase_data );
+		} else {
+			$payment_intent = $this->create_payment_intent( $payment_id, $prepared_source, $purchase_data );
+		}
 
 		edd_debug_log( print_r( $payment_intent, true ) );
 

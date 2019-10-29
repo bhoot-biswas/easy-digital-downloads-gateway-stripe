@@ -38,9 +38,9 @@ abstract class StripePayments {
 		}
 
 		return (object) array(
-			'customer_id'     => $customer_id,
-			'source_id'       => $source_id,
+			'customer'        => $customer_id,
 			'customer_object' => $customer,
+			'source'          => $source_id,
 			'source_object'   => $source_object,
 		);
 	}
@@ -65,13 +65,27 @@ abstract class StripePayments {
 	}
 
 	/**
-	 * Create a new PaymentIntent.
+	 * Retrieves the payment intent, associated with an payment.
+	 * @param  [type] $payment_id [description]
+	 * @return [type]             [description]
+	 */
+	public function get_payment_intent( $payment_id ) {
+		$intent_id = edd_get_payment_meta( $payment_id, '_stripe_intent_id', true );
+		if ( ! $intent_id ) {
+			return false;
+		}
+
+		return StripeAPI::request( array(), "payment_intents/$intent_id", 'GET' );
+	}
+
+	/**
+	 * Create a new payment intent.
 	 * @param  [type] $payment_id      [description]
 	 * @param  [type] $prepared_source [description]
 	 * @param  [type] $purchase_data   [description]
 	 * @return [type]                  [description]
 	 */
-	public function create_intent( $payment_id, $prepared_source, $purchase_data ) {
+	public function create_payment_intent( $payment_id, $prepared_source, $purchase_data ) {
 		$customer           = new EDD_Customer( $prepared_source->customer_object->get_customer_id() );
 		$names              = explode( ' ', $customer->name );
 		$billing_first_name = ! empty( $names[0] ) ? $names[0] : '';
@@ -82,7 +96,7 @@ abstract class StripePayments {
 		}
 
 		$args = array(
-			'source'               => $prepared_source->source_id,
+			'source'               => $prepared_source->source,
 			'amount'               => StripeHelper::get_stripe_amount( $purchase_data['price'] ),
 			'currency'             => edd_get_currency(),
 			/* translators: 1) blog name 2) payment id */
@@ -98,8 +112,8 @@ abstract class StripePayments {
 			),
 		);
 
-		if ( $prepared_source->customer_id ) {
-			$args['customer'] = $prepared_source->customer_id;
+		if ( $prepared_source->customer ) {
+			$args['customer'] = $prepared_source->customer;
 		}
 
 		// Create an intent that awaits an action.
@@ -112,6 +126,36 @@ abstract class StripePayments {
 		edd_update_payment_meta( $payment_id, '_stripe_intent_id', $payment_intent->id );
 
 		return $payment_intent;
+	}
+
+	/**
+	 * Updates an existing intent with updated amount, source, and customer.
+	 * @param  [type] $payment_intent  [description]
+	 * @param  [type] $prepared_source [description]
+	 * @param  [type] $purchase_data   [description]
+	 * @return [type]                  [description]
+	 */
+	public function update_payment_intent( $payment_intent, $prepared_source, $purchase_data ) {
+		$request = array();
+
+		if ( $prepared_source->source !== $payment_intent->source ) {
+			$request['source'] = $prepared_source->source;
+		}
+
+		$updated_amount = StripeHelper::get_stripe_amount( $purchase_data['price'] );
+		if ( $payment_intent->amount !== $updated_amount ) {
+			$request['amount'] = $updated_amount;
+		}
+
+		if ( $prepared_source->customer && ( $payment_intent->customer !== $prepared_source->customer ) ) {
+			$request['customer'] = $prepared_source->customer;
+		}
+
+		if ( empty( $request ) ) {
+			return $intent;
+		}
+
+		return StripeAPI::request( $request, "payment_intents/$payment_intent->id" );
 	}
 
 }
