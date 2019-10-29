@@ -309,9 +309,21 @@ class Stripe extends StripePayments {
 		}
 
 		// Confirm payment intent.
-		if ( empty( $intent->error ) ) {
+		if ( empty( $payment_intent->error ) ) {
 			$payment_intent = $this->confirm_payment_intent( $payment_intent, $payment_id, $prepared_source );
 		}
+
+		if ( ! empty( $payment_intent ) ) {
+			// Use the last charge within the intent to proceed.
+			$response = end( $payment_intent->charges->data );
+		}
+
+		// Process valid response.
+		$this->process_response( $response, $order );
+
+		// Empty the shopping cart
+		edd_empty_cart();
+		edd_send_to_success_page();
 
 		edd_debug_log( print_r( $payment_intent, true ) );
 

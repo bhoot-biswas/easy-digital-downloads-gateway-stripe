@@ -9,6 +9,7 @@ use BengalStudio\EDD\Stripe\StripeCustomer;
 use BengalStudio\EDD\Stripe\StripeHelper;
 use EDD_Payment;
 use EDD_Customer;
+use Exception;
 
 abstract class StripePayments {
 	/**
@@ -189,6 +190,59 @@ abstract class StripePayments {
 		}
 
 		return $payment_intent_confirmed;
+	}
+
+	/**
+	 * Store extra meta data for an order from a Stripe Response.
+	 * @param  [type] $response   [description]
+	 * @param  [type] $payment_id [description]
+	 * @return [type]             [description]
+	 */
+	public function process_response( $response, $payment_id ) {
+		edd_debug_log( 'Processing response: ' . print_r( $response, true ) );
+
+		$captured = ( isset( $response->captured ) && $response->captured ) ? 'yes' : 'no';
+
+		// Store charge data.
+		edd_update_payment_meta( $payment_id, '_stripe_charge_captured', $captured );
+
+		if ( 'yes' === $captured ) {
+			/**
+			 * Charge can be captured but in a pending state. Payment methods
+			 * that are asynchronous may take couple days to clear. Webhook will
+			 * take care of the status changes.
+			 */
+			if ( 'pending' === $response->status ) {
+				edd_update_payment_status( $payment_id, 'pending' );
+
+				/* translators: transaction id */
+				$message = sprintf( __( 'Stripe charge awaiting payment: %s.', 'woocommerce-gateway-stripe' ), $response->id );
+				edd_insert_payment_note( $payment_id, $message );
+			}
+
+			if ( 'succeeded' === $response->status ) {
+				edd_set_payment_transaction_id( $payment_id, $response->id );
+				edd_update_payment_status( $payment_id, 'publish' );
+
+				/* translators: transaction id */
+				$message = sprintf( __( 'Stripe charge complete (Charge ID: %s)', 'woocommerce-gateway-stripe' ), $response->id );
+				edd_insert_payment_note( $payment_id, $message );
+			}
+
+			if ( 'failed' === $response->status ) {
+				$localized_message = __( 'Payment processing failed. Please retry.', 'woocommerce-gateway-stripe' );
+				edd_insert_payment_note( $payment_id, $localized_message );
+				throw new Exception( print_r( $response, true ), $localized_message );
+			}
+		} else {
+			edd_update_payment_status( $payment_id, 'pending' );
+			/* translators: transaction id */
+			edd_insert_payment_note( $payment_id, sprintf( __( 'Stripe charge authorized (Charge ID: %s). Process order to take payment, or cancel to remove the pre-authorization.', 'woocommerce-gateway-stripe' ), $response->id ) );
+		}
+
+		do_action( 'edd_gateway_stripe_process_response', $response, $payment_id );
+
+		return $response;
 	}
 
 }
