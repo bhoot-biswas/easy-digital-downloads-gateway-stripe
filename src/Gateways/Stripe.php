@@ -4,13 +4,15 @@ namespace BengalStudio\EDD\Stripe\Gateways;
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
-use BengalStudio\EDD\Stripe\API;
 use BengalStudio\EDD\Stripe\Loader;
+use BengalStudio\EDD\Stripe\StripeAPI;
+
+use EDD_Customer;
 
 /**
- * GatewayStripe class.
+ * Stripe class.
  */
-class Stripe {
+class Stripe extends StripePayments {
 
 	/**
 	 * Define variables.
@@ -93,7 +95,7 @@ class Stripe {
 			'publishable_key' => edd_is_test_mode() ? edd_get_option( 'stripe_test_publishable_key', '' ) : edd_get_option( 'stripe_publishable_key', '' ),
 		);
 
-		API::set_secret_key( $config['secret_key'] );
+		StripeAPI::set_secret_key( $config['secret_key'] );
 	}
 
 	/**
@@ -268,6 +270,43 @@ class Stripe {
 		if ( $errors ) {
 			edd_send_back_to_checkout( '?payment-mode=stripe' );
 		}
+
+		// Collect payment data
+		$payment_data = array(
+			'price'        => $purchase_data['price'],
+			'date'         => $purchase_data['date'],
+			'user_email'   => $purchase_data['user_email'],
+			'purchase_key' => $purchase_data['purchase_key'],
+			'currency'     => edd_get_currency(),
+			'downloads'    => $purchase_data['downloads'],
+			'user_info'    => $purchase_data['user_info'],
+			'cart_details' => $purchase_data['cart_details'],
+			'gateway'      => 'paypal',
+			'status'       => 'pending',
+		);
+
+		// Record the pending payment
+		$payment_id = edd_insert_payment( $payment_data );
+
+		// Check payment
+		if ( ! $payment_id ) {
+			// Problems? send back
+			edd_send_back_to_checkout( '?payment-mode=' . $purchase_data['post_data']['edd-gateway'] );
+		}
+
+		// Set the session data to recover this payment in the event of abandonment or error.
+		EDD()->session->set( 'edd_resume_payment', $payment_id );
+
+		// Prepare source.
+		$prepared_source = $this->prepare_source( $payment_id, $purchase_data );
+
+		// Create payment intent.
+		$payment_intent = $this->create_intent( $payment_id, $prepared_source, $purchase_data );
+
+		edd_debug_log( print_r( $payment_intent, true ) );
+
+		// Problems? send back
+		edd_send_back_to_checkout( '?payment-mode=' . $purchase_data['post_data']['edd-gateway'] );
 	}
 
 	/**
@@ -336,6 +375,15 @@ class Stripe {
 		// do_action( 'edd_after_cc_fields' );
 
 		echo ob_get_clean();
+	}
+
+	/**
+	 * [maybe_create_customer description]
+	 * @param  [type] $payment [description]
+	 * @return [type]          [description]
+	 */
+	public function maybe_create_customer( $payment ) {
+
 	}
 
 }
