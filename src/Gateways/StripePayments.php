@@ -194,17 +194,20 @@ abstract class StripePayments {
 
 	/**
 	 * Store extra meta data for an order from a Stripe Response.
-	 * @param  [type] $response   [description]
-	 * @param  [type] $payment_id [description]
-	 * @return [type]             [description]
+	 * @param  [type] $response      [description]
+	 * @param  [type] $payment_id    [description]
+	 * @param  [type] $purchase_data [description]
+	 * @return [type]                [description]
 	 */
-	public function process_response( $response, $payment_id ) {
-		edd_debug_log( 'Processing response: ' . print_r( $response, true ) );
+	public function process_response( $response, $payment_id, $purchase_data ) {
+		// edd_debug_log( 'Processing response: ' . print_r( $response, true ) );
 
 		$captured = ( isset( $response->captured ) && $response->captured ) ? 'yes' : 'no';
 
 		// Store charge data.
 		edd_update_payment_meta( $payment_id, '_stripe_charge_captured', $captured );
+
+		edd_debug_log( 'Captured: ' . $captured );
 
 		if ( 'yes' === $captured ) {
 			/**
@@ -216,7 +219,7 @@ abstract class StripePayments {
 				edd_update_payment_status( $payment_id, 'pending' );
 
 				/* translators: transaction id */
-				$message = sprintf( __( 'Stripe charge awaiting payment: %s.', 'woocommerce-gateway-stripe' ), $response->id );
+				$message = sprintf( __( 'Stripe charge awaiting payment: %s.', 'edd-gateway-stripe' ), $response->id );
 				edd_insert_payment_note( $payment_id, $message );
 			}
 
@@ -225,24 +228,125 @@ abstract class StripePayments {
 				edd_update_payment_status( $payment_id, 'publish' );
 
 				/* translators: transaction id */
-				$message = sprintf( __( 'Stripe charge complete (Charge ID: %s)', 'woocommerce-gateway-stripe' ), $response->id );
+				$message = sprintf( __( 'Stripe charge complete (Charge ID: %s)', 'edd-gateway-stripe' ), $response->id );
 				edd_insert_payment_note( $payment_id, $message );
 			}
 
 			if ( 'failed' === $response->status ) {
-				$localized_message = __( 'Payment processing failed. Please retry.', 'woocommerce-gateway-stripe' );
+				$localized_message = __( 'Payment processing failed. Please retry.', 'edd-gateway-stripe' );
 				edd_insert_payment_note( $payment_id, $localized_message );
-				throw new Exception( print_r( $response, true ), $localized_message );
+
+				// Problems? send back
+				edd_send_back_to_checkout( '?payment-mode=' . $purchase_data['post_data']['edd-gateway'] );
 			}
 		} else {
 			edd_update_payment_status( $payment_id, 'pending' );
 			/* translators: transaction id */
-			edd_insert_payment_note( $payment_id, sprintf( __( 'Stripe charge authorized (Charge ID: %s). Process order to take payment, or cancel to remove the pre-authorization.', 'woocommerce-gateway-stripe' ), $response->id ) );
+			edd_insert_payment_note( $payment_id, sprintf( __( 'Stripe charge authorized (Charge ID: %s). Process order to take payment, or cancel to remove the pre-authorization.', 'edd-gateway-stripe' ), $response->id ) );
 		}
 
 		do_action( 'edd_gateway_stripe_process_response', $response, $payment_id );
 
 		return $response;
+	}
+
+	/**
+	 * Refund a charge.
+	 * @param  [type] $order_id [description]
+	 * @param  [type] $amount   [description]
+	 * @param  string $reason   [description]
+	 * @return [type]           [description]
+	 */
+	public function process_refund( $payment_id, $amount = null, $reason = '' ) {
+		$payment = edd_get_payment( $payment_id );
+
+		if ( ! $payment ) {
+			return false;
+		}
+
+		$request = array();
+
+		$payment_currency = $payment->currency;
+		$captured         = $payment->get_meta( '_stripe_charge_captured', true );
+		$charge_id        = $payment->transaction_id;
+
+		if ( ! $charge_id ) {
+			return false;
+		}
+
+		if ( ! is_null( $amount ) ) {
+			$request['amount'] = StripeHelper::get_stripe_amount( $amount, $payment_currency );
+		}
+
+		// If order is only authorized, don't pass amount.
+		if ( 'yes' !== $captured ) {
+			unset( $request['amount'] );
+		}
+
+		if ( $reason ) {
+			$request['metadata'] = array(
+				'reason' => $reason,
+			);
+		}
+
+		$request['charge'] = $charge_id;
+		edd_debug_log( "Info: Beginning refund for order {$charge_id} for the amount of {$amount}" );
+
+		$request = apply_filters( 'edd_stripe_refund_request', $request, $payment );
+
+		$payment_intent           = $this->get_payment_intent( $payment_id );
+		$payment_intent_cancelled = false;
+		if ( $payment_intent ) {
+			// If the order has a Payment Intent pending capture, then the Intent itself must be refunded (cancelled), not the Charge
+			if ( ! empty( $payment_intent->error ) ) {
+				$response                 = $payment_intent;
+				$payment_intent_cancelled = true;
+			} elseif ( 'requires_capture' === $payment_intent->status ) {
+				$result                   = StripeAPI::request(
+					array(),
+					'payment_intents/' . $payment_intent->id . '/cancel'
+				);
+				$payment_intent_cancelled = true;
+
+				if ( ! empty( $result->error ) ) {
+					$response = $result;
+				} else {
+					$charge   = end( $result->charges->data );
+					$response = end( $charge->refunds->data );
+				}
+			}
+		}
+
+		if ( ! $payment_intent_cancelled ) {
+			$response = StripeAPI::request( $request, 'refunds' );
+		}
+
+		if ( ! empty( $response->error ) ) {
+			edd_debug_log( 'Error: ' . $response->error->message );
+
+			return $response;
+
+		} elseif ( ! empty( $response->id ) ) {
+			$payment->update_meta( '_stripe_refund_id', $response->id );
+
+			$amount = $response->amount;
+
+			if ( in_array( strtolower( $payment->currency ), StripeHelper::no_decimal_currencies() ) ) {
+				$amount = $response->amount;
+			}
+
+			// if ( isset( $response->balance_transaction ) ) {
+			// 	$this->update_fees( $payment, $response->balance_transaction );
+			// }
+
+			/* translators: 1) dollar amount 2) transaction id 3) refund message */
+			$refund_message = ( isset( $captured ) && 'yes' === $captured ) ? sprintf( __( 'Refunded %1$s - Refund ID: %2$s - Reason: %3$s', 'edd-gateway-stripe' ), $amount, $response->id, $reason ) : __( 'Pre-Authorization Released', 'edd-gateway-stripe' );
+
+			$payment->add_note( $refund_message );
+			edd_debug_log( 'Success: ' . html_entity_decode( wp_strip_all_tags( $refund_message ) ) );
+
+			return true;
+		}
 	}
 
 }

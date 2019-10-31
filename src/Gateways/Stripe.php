@@ -15,11 +15,16 @@ use EDD_Customer;
 class Stripe extends StripePayments {
 
 	/**
-	 * Define variables.
+	 * Gateway ID.
 	 * @var string
 	 */
-	public $gateway_id = 'stripe';
-	public $is_setup   = null;
+	public $gateway_id;
+
+	/**
+	 * All the required settings have been filled out?
+	 * @var [type]
+	 */
+	public $is_setup;
 
 	/**
 	 * The single instance of the class.
@@ -44,6 +49,9 @@ class Stripe extends StripePayments {
 	 * to use the singleton, you have to obtain the instance from Singleton::getInstance() instead
 	 */
 	private function __construct() {
+		// Update variables.
+		$this->gateway_id = 'stripe';
+
 		// Run this separate so we can ditch as early as possible
 		$this->register();
 
@@ -116,7 +124,7 @@ class Stripe extends StripePayments {
 	 * @return [type]                   [description]
 	 */
 	public function register_gateway_section( $gateway_sections ) {
-		$gateway_sections['stripe'] = __( 'Stripe Payments', 'easy-digital-downloads' );
+		$gateway_sections['stripe'] = __( 'Stripe Payments', 'edd-gateway-stripe' );
 
 		return $gateway_sections;
 	}
@@ -130,7 +138,7 @@ class Stripe extends StripePayments {
 		$default_stripe_settings = array(
 			'stripe'                      => array(
 				'id'   => 'stripe',
-				'name' => '<strong>' . __( 'Stripe Payments Settings', 'easy-digital-downloads' ) . '</strong>',
+				'name' => '<strong>' . __( 'Stripe Payments Settings', 'edd-gateway-stripe' ) . '</strong>',
 				'type' => 'header',
 			),
 			'stripe_test_publishable_key' => array(
@@ -186,6 +194,7 @@ class Stripe extends StripePayments {
 		add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
 		add_action( 'edd_checkout_error_checks', array( $this, 'checkout_error_checks' ) );
 		add_action( 'edd_gateway_stripe', array( $this, 'process_purchase' ) );
+		add_action( 'edd_update_payment_status', array( $this, 'cancel_purchase' ), 200, 3 );
 	}
 
 	/**
@@ -263,7 +272,7 @@ class Stripe extends StripePayments {
 	 */
 	public function process_purchase( $purchase_data ) {
 		if ( empty( $purchase_data['post_data']['stripe_source'] ) ) {
-			edd_set_error( 'missing_source_id', __( 'Missing Source ID, please try again', 'easy-digital-downloads' ) );
+			edd_set_error( 'missing_source_id', __( 'Missing Source ID, please try again', 'edd-gateway-stripe' ) );
 		}
 
 		$errors = edd_get_errors();
@@ -281,7 +290,7 @@ class Stripe extends StripePayments {
 			'downloads'    => $purchase_data['downloads'],
 			'user_info'    => $purchase_data['user_info'],
 			'cart_details' => $purchase_data['cart_details'],
-			'gateway'      => 'paypal',
+			'gateway'      => $this->gateway_id,
 			'status'       => 'pending',
 		);
 
@@ -319,16 +328,11 @@ class Stripe extends StripePayments {
 		}
 
 		// Process valid response.
-		$this->process_response( $response, $order );
+		$this->process_response( $response, $payment_id, $purchase_data );
 
 		// Empty the shopping cart
 		edd_empty_cart();
 		edd_send_to_success_page();
-
-		edd_debug_log( print_r( $payment_intent, true ) );
-
-		// Problems? send back
-		edd_send_back_to_checkout( '?payment-mode=' . $purchase_data['post_data']['edd-gateway'] );
 	}
 
 	/**
@@ -341,7 +345,7 @@ class Stripe extends StripePayments {
 		<?php do_action( 'edd_before_cc_fields' ); ?>
 
 		<fieldset id="edd_cc_fields" class="edd-do-validate">
-			<legend><?php _e( 'Credit Card Info', 'easy-digital-downloads' ); ?></legend>
+			<legend><?php _e( 'Credit Card Info', 'edd-gateway-stripe' ); ?></legend>
 			<?php if ( is_ssl() ) : ?>
 				<div id="edd_secure_site_wrapper">
 					<span class="padlock">
@@ -349,7 +353,7 @@ class Stripe extends StripePayments {
 							<path d="M5 12h8V9c0-2.203-1.797-4-4-4S5 6.797 5 9v3zm13 1.5v9c0 .828-.672 1.5-1.5 1.5h-15C.672 24 0 23.328 0 22.5v-9c0-.828.672-1.5 1.5-1.5H2V9c0-3.844 3.156-7 7-7s7 3.156 7 7v3h.5c.828 0 1.5.672 1.5 1.5z"/>
 						</svg>
 					</span>
-					<span><?php _e( 'This is a secure SSL encrypted payment.', 'easy-digital-downloads' ); ?></span>
+					<span><?php _e( 'This is a secure SSL encrypted payment.', 'edd-gateway-stripe' ); ?></span>
 				</div>
 			<?php endif; ?>
 			<?php if ( edd_is_test_mode() ) : ?>
@@ -357,11 +361,11 @@ class Stripe extends StripePayments {
 			<?php endif; ?>
 			<p id="edd-card-number-wrap">
 				<label for="card_number" class="edd-label">
-					<?php _e( 'Card Number', 'easy-digital-downloads' ); ?>
+					<?php _e( 'Card Number', 'edd-gateway-stripe' ); ?>
 					<span class="edd-required-indicator">*</span>
 					<span class="card-type"></span>
 				</label>
-				<span class="edd-description"><?php _e( 'The (typically) 16 digits on the front of your credit card.', 'easy-digital-downloads' ); ?></span>
+				<span class="edd-description"><?php _e( 'The (typically) 16 digits on the front of your credit card.', 'edd-gateway-stripe' ); ?></span>
 				<div id="stripe-card-element" class="wc-stripe-elements-field">
 				<!-- a Stripe Element will be inserted here. -->
 				</div>
@@ -371,10 +375,10 @@ class Stripe extends StripePayments {
 			<?php do_action( 'edd_before_cc_expiration' ); ?>
 			<p class="card-expiration">
 				<label for="card_exp_month" class="edd-label">
-					<?php _e( 'Expiration (MM/YY)', 'easy-digital-downloads' ); ?>
+					<?php _e( 'Expiration (MM/YY)', 'edd-gateway-stripe' ); ?>
 					<span class="edd-required-indicator">*</span>
 				</label>
-				<span class="edd-description"><?php _e( 'The date your credit card expires, typically on the front of the card.', 'easy-digital-downloads' ); ?></span>
+				<span class="edd-description"><?php _e( 'The date your credit card expires, typically on the front of the card.', 'edd-gateway-stripe' ); ?></span>
 				<div id="stripe-exp-element" class="wc-stripe-elements-field">
 				<!-- a Stripe Element will be inserted here. -->
 				</div>
@@ -383,10 +387,10 @@ class Stripe extends StripePayments {
 
 			<p id="edd-card-cvc-wrap">
 				<label for="card_cvc" class="edd-label">
-					<?php _e( 'CVC', 'easy-digital-downloads' ); ?>
+					<?php _e( 'CVC', 'edd-gateway-stripe' ); ?>
 					<span class="edd-required-indicator">*</span>
 				</label>
-				<span class="edd-description"><?php _e( 'The 3 digit (back) or 4 digit (front) value on your card.', 'easy-digital-downloads' ); ?></span>
+				<span class="edd-description"><?php _e( 'The 3 digit (back) or 4 digit (front) value on your card.', 'edd-gateway-stripe' ); ?></span>
 				<div id="stripe-cvc-element" class="wc-stripe-elements-field">
 				<!-- a Stripe Element will be inserted here. -->
 				</div>
@@ -394,18 +398,35 @@ class Stripe extends StripePayments {
 
 		</fieldset>
 		<?php
-		// do_action( 'edd_after_cc_fields' );
+		do_action( 'edd_after_cc_fields' );
 
 		echo ob_get_clean();
 	}
 
 	/**
-	 * [maybe_create_customer description]
-	 * @param  [type] $payment [description]
-	 * @return [type]          [description]
+	 * Cancel pre-auth on refund/cancellation.
+	 * @param  [type] $payment_id [description]
+	 * @param  [type] $new_status [description]
+	 * @param  [type] $old_status [description]
+	 * @return [type]             [description]
 	 */
-	public function maybe_create_customer( $payment ) {
+	public function cancel_purchase( $payment_id, $new_status, $old_status ) {
+		// If the payment was not in publish or revoked status, don't decrement stats as they were never incremented
+		if ( ( 'publish' != $old_status && 'revoked' != $old_status ) || 'refunded' != $new_status ) {
+			return;
+		}
 
+		if ( 'stripe' !== edd_get_payment_gateway( $payment_id ) ) {
+			return;
+		}
+
+		// If not captured, refund.
+		if ( 'no' === edd_get_payment_meta( $payment_id, '_stripe_charge_captured', true ) ) {
+			$this->process_refund( $payment_id );
+		}
+
+		// This hook fires when admin manually changes order status to cancel.
+		do_action( 'edd_stripe_process_manual_cancel', $order );
 	}
 
 }
