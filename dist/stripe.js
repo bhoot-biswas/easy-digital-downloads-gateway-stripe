@@ -23,7 +23,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
       _classCallCheck(this, EDD_Gateway_Stripe);
 
       try {
-        this.stripe = Stripe('pk_test_ZWxxc0uVCxEduPZDVH6TCkhV00YNdRuEqo');
+        this.stripe = Stripe(edd_stripe_params.key);
       } catch (error) {
         console.log(error);
         return;

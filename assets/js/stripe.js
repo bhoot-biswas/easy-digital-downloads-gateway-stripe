@@ -5,7 +5,7 @@
 	class EDD_Gateway_Stripe {
 		constructor() {
 			try {
-				this.stripe = Stripe('pk_test_ZWxxc0uVCxEduPZDVH6TCkhV00YNdRuEqo');
+				this.stripe = Stripe(edd_stripe_params.key);
 			} catch (error) {
 				console.log(error);
 				return;

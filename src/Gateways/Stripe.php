@@ -27,6 +27,18 @@ class Stripe extends StripePayments {
 	public $is_setup;
 
 	/**
+	 * API access publishable key.
+	 * @var [type]
+	 */
+	public $publishable_key;
+
+	/**
+	 * API access secret key
+	 * @var [type]
+	 */
+	public $secret_key;
+
+	/**
 	 * The single instance of the class.
 	 * @var [type]
 	 */
@@ -59,7 +71,7 @@ class Stripe extends StripePayments {
 			return;
 		}
 
-		$this->setup();
+		$this->set_api();
 		$this->filters();
 		$this->actions();
 	}
@@ -90,20 +102,14 @@ class Stripe extends StripePayments {
 	}
 
 	/**
-	 * [setup description]
-	 * @return [type] [description]
+	 * Set Stripe API key.
 	 */
-	public function setup() {
+	public function set_api() {
 		if ( ! $this->is_setup() ) {
 			return;
 		}
 
-		$config = array(
-			'secret_key'      => edd_is_test_mode() ? edd_get_option( 'stripe_test_secret_key', '' ) : edd_get_option( 'stripe_secret_key', '' ),
-			'publishable_key' => edd_is_test_mode() ? edd_get_option( 'stripe_test_publishable_key', '' ) : edd_get_option( 'stripe_publishable_key', '' ),
-		);
-
-		StripeAPI::set_secret_key( $config['secret_key'] );
+		StripeAPI::set_secret_key( $this->secret_key );
 	}
 
 	/**
@@ -116,6 +122,18 @@ class Stripe extends StripePayments {
 			add_filter( 'edd_settings_gateways', array( $this, 'register_gateway_settings' ), 1, 1 );
 			add_action( 'edd_stripe_cc_form', array( $this, 'get_cc_form' ) );
 		}
+	}
+
+	/**
+	 * Add actions.
+	 * @return [type] [description]
+	 */
+	public function actions() {
+		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
+		add_action( 'edd_checkout_error_checks', array( $this, 'checkout_error_checks' ) );
+		add_action( 'edd_gateway_stripe', array( $this, 'process_purchase' ) );
+		add_action( 'edd_update_payment_status', array( $this, 'cancel_purchase' ), 200, 3 );
 	}
 
 	/**
@@ -186,19 +204,7 @@ class Stripe extends StripePayments {
 	}
 
 	/**
-	 * Add actions.
-	 * @return [type] [description]
-	 */
-	public function actions() {
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
-		add_action( 'edd_checkout_error_checks', array( $this, 'checkout_error_checks' ) );
-		add_action( 'edd_gateway_stripe', array( $this, 'process_purchase' ) );
-		add_action( 'edd_update_payment_status', array( $this, 'cancel_purchase' ), 200, 3 );
-	}
-
-	/**
-	 * [is_setup description]
+	 * Method to check if all the required settings have been filled out, allowing us to not output information without it.
 	 * @return boolean [description]
 	 */
 	public function is_setup() {
@@ -206,23 +212,22 @@ class Stripe extends StripePayments {
 			return $this->is_setup;
 		}
 
-		$required_items = array( 'secret_key', 'publishable_key' );
-
-		$current_values = array(
-			'secret_key'      => edd_is_test_mode() ? edd_get_option( 'stripe_test_secret_key', '' ) : edd_get_option( 'stripe_secret_key', '' ),
-			'publishable_key' => edd_is_test_mode() ? edd_get_option( 'stripe_test_publishable_key', '' ) : edd_get_option( 'stripe_publishable_key', '' ),
-		);
-
-		$this->is_setup = true;
-
-		foreach ( $required_items as $key ) {
-			if ( empty( $current_values[ $key ] ) ) {
-				$this->is_setup = false;
-				break;
-			}
-		}
+		$this->secret_key      = edd_is_test_mode() ? edd_get_option( 'stripe_test_secret_key', '' ) : edd_get_option( 'stripe_secret_key', '' );
+		$this->publishable_key = edd_is_test_mode() ? edd_get_option( 'stripe_test_publishable_key', '' ) : edd_get_option( 'stripe_publishable_key', '' );
+		$this->is_setup        = $this->are_keys_set();
 
 		return $this->is_setup;
+	}
+
+	/**
+	 * Checks if keys are set.
+	 */
+	public function are_keys_set() {
+		if ( empty( $this->secret_key ) || empty( $this->publishable_key ) ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -230,6 +235,11 @@ class Stripe extends StripePayments {
 	 * @return [type] [description]
 	 */
 	public function register_scripts() {
+		// Exit early.
+		if ( ! $this->is_setup() || ! edd_is_checkout() ) {
+			return;
+		}
+
 		wp_register_script( 'stripe', 'https://js.stripe.com/v3/', '', '3.0', true );
 		wp_register_script(
 			'edd_stripe',
@@ -237,6 +247,16 @@ class Stripe extends StripePayments {
 			array( 'jquery', 'stripe' ),
 			Loader::get_file_version( 'stripe.js' ),
 			true
+		);
+
+		$stripe_params = array(
+			'key' => $this->publishable_key,
+		);
+
+		wp_localize_script(
+			'edd_stripe',
+			'edd_stripe_params',
+			apply_filters( 'edd_stripe_params', $stripe_params )
 		);
 
 		wp_register_style(
