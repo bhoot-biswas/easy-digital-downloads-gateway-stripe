@@ -120,7 +120,6 @@ class Stripe extends StripePayments {
 		if ( is_admin() ) {
 			add_filter( 'edd_settings_sections_gateways', array( $this, 'register_gateway_section' ), 1, 1 );
 			add_filter( 'edd_settings_gateways', array( $this, 'register_gateway_settings' ), 1, 1 );
-			add_action( 'edd_stripe_cc_form', array( $this, 'get_cc_form' ) );
 		}
 	}
 
@@ -131,6 +130,8 @@ class Stripe extends StripePayments {
 	public function actions() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
+		add_filter( 'edd_enabled_payment_gateways', array( $this, 'prepare_pay_page' ) );
+		add_action( 'edd_stripe_cc_form', array( $this, 'get_cc_form' ) );
 		add_action( 'edd_checkout_error_checks', array( $this, 'checkout_error_checks' ) );
 		add_action( 'edd_gateway_stripe', array( $this, 'process_purchase' ) );
 		add_action( 'edd_update_payment_status', array( $this, 'cancel_purchase' ), 200, 3 );
@@ -447,6 +448,32 @@ class Stripe extends StripePayments {
 
 		// This hook fires when admin manually changes order status to cancel.
 		do_action( 'edd_stripe_process_manual_cancel', $order );
+	}
+
+	/**
+	 * [prepare_pay_page description]
+	 * @param  [type] $gateways [description]
+	 * @return [type]           [description]
+	 */
+	public function prepare_pay_page( $gateways ) {
+		if ( ! edd_is_checkout() || ! isset( $_GET['edd-stripe-confirmation'] ) ) { // wpcs: csrf ok.
+			return $gateways;
+		}
+
+		remove_all_actions( 'edd_purchase_form_after_cc_form' );
+		remove_all_actions( 'edd_purchase_form_after_user_info' );
+		remove_all_actions( 'edd_purchase_form_register_fields' );
+		remove_all_actions( 'edd_purchase_form_login_fields' );
+		remove_all_actions( 'edd_register_fields_before' );
+		remove_all_actions( 'edd_cc_form' );
+		remove_all_actions( 'edd_checkout_form_top' );
+
+		// echo edd_get_chosen_gateway();
+
+		add_filter( 'edd_enabled_payment_gateways', '__return_empty_array' );
+		add_action( 'edd_can_checkout', '__return_false' );
+
+		return array();
 	}
 
 }

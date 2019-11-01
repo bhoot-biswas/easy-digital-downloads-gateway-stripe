@@ -29,6 +29,10 @@
 			this.form = eddPurchaseform;
 			this.form.on('submit', this.onSubmit);
 			body.on('edd_gateway_loaded', this.createElements);
+			$(document).ajaxComplete(function(event, xhr, settings) {
+				console.log(xhr.responseText);
+				// window.location = 'https://facebook.com';
+			});
 		}
 
 		createElements() {
@@ -99,6 +103,8 @@
 		}
 
 		onSubmit() {
+			console.log('prevented');
+			return false;
 			if (!this.isStripeChosen()) {
 				return true;
 			}

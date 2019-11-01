@@ -49,6 +49,9 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
         this.form = eddPurchaseform;
         this.form.on('submit', this.onSubmit);
         body.on('edd_gateway_loaded', this.createElements);
+        $(document).ajaxComplete(function (event, xhr, settings) {
+          console.log(xhr.responseText); // window.location = 'https://facebook.com';
+        });
       }
     }, {
       key: "createElements",
@@ -123,6 +126,9 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
     }, {
       key: "onSubmit",
       value: function onSubmit() {
+        console.log('prevented');
+        return false;
+
         if (!this.isStripeChosen()) {
           return true;
         } // If a source is already in place, submit the form as usual.
