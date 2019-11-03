@@ -8,6 +8,8 @@ use BengalStudio\EDD\Stripe\Loader;
 use BengalStudio\EDD\Stripe\StripeAPI;
 
 use EDD_Customer;
+use Exception;
+use EDD_Payment;
 
 /**
  * Stripe class.
@@ -130,8 +132,9 @@ class Stripe extends StripePayments {
 	public function actions() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
-		add_filter( 'edd_enabled_payment_gateways', array( $this, 'prepare_pay_page' ) );
+		// add_filter( 'edd_enabled_payment_gateways', array( $this, 'prepare_pay_page' ) );
 		add_action( 'edd_stripe_cc_form', array( $this, 'get_cc_form' ) );
+		add_action( 'edd_after_checkout_cart', array( $this, 'remove_actions' ) );
 		add_action( 'edd_checkout_error_checks', array( $this, 'checkout_error_checks' ) );
 		add_action( 'edd_gateway_stripe', array( $this, 'process_purchase' ) );
 		add_action( 'edd_update_payment_status', array( $this, 'cancel_purchase' ), 200, 3 );
@@ -346,6 +349,16 @@ class Stripe extends StripePayments {
 		if ( ! empty( $payment_intent ) ) {
 			// Use the last charge within the intent to proceed.
 			$response = end( $payment_intent->charges->data );
+
+			// If the intent requires a 3DS flow, redirect to it.
+			if ( 'requires_action' === $payment_intent->status ) {
+				edd_send_back_to_checkout(
+					array(
+						'edd-stripe-confirmation' => 1,
+						'payment-pay'             => $payment_id,
+					)
+				);
+			}
 		}
 
 		// Process valid response.
@@ -459,21 +472,119 @@ class Stripe extends StripePayments {
 		if ( ! edd_is_checkout() || ! isset( $_GET['edd-stripe-confirmation'] ) ) { // wpcs: csrf ok.
 			return $gateways;
 		}
-
-		remove_all_actions( 'edd_purchase_form_after_cc_form' );
-		remove_all_actions( 'edd_purchase_form_after_user_info' );
-		remove_all_actions( 'edd_purchase_form_register_fields' );
-		remove_all_actions( 'edd_purchase_form_login_fields' );
-		remove_all_actions( 'edd_register_fields_before' );
-		remove_all_actions( 'edd_cc_form' );
-		remove_all_actions( 'edd_checkout_form_top' );
+		//
+		// remove_all_actions( 'edd_purchase_form_after_cc_form' );
+		// remove_all_actions( 'edd_purchase_form_after_user_info' );
+		// remove_all_actions( 'edd_purchase_form_register_fields' );
+		// remove_all_actions( 'edd_purchase_form_login_fields' );
+		// remove_all_actions( 'edd_register_fields_before' );
+		// remove_all_actions( 'edd_cc_form' );
+		// remove_all_actions( 'edd_checkout_form_top' );
 
 		// echo edd_get_chosen_gateway();
-
-		add_filter( 'edd_enabled_payment_gateways', '__return_empty_array' );
-		add_action( 'edd_can_checkout', '__return_false' );
+		//
+		// add_filter( 'edd_enabled_payment_gateways', '__return_empty_array' );
+		// add_action( 'edd_can_checkout', '__return_false' );
 
 		return array();
+	}
+
+	/**
+	 * [remove_actions description]
+	 * @return [type] [description]
+	 */
+	public function remove_actions() {
+		if ( ! edd_is_checkout() || ! isset( $_GET['edd-stripe-confirmation'] ) ) { // wpcs: csrf ok.
+			return;
+		}
+
+		try {
+			$this->prepare_intent_for_payment_pay_page();
+		} catch ( Exception $e ) {
+			// Just show the full order pay page if there was a problem preparing the Payment Intent
+			return;
+		}
+
+		remove_all_actions( 'edd_checkout_form_top' );
+		remove_all_actions( 'edd_payment_mode_select' );
+		remove_all_actions( 'edd_payment_mode_top' );
+
+		add_action( 'edd_checkout_form_bottom', array( $this, 'render_payment_intent_inputs' ) );
+
+		// add_filter( 'edd_enabled_payment_gateways', '__return_empty_array' );
+		// remove_all_actions( 'edd_purchase_form_after_cc_form' );
+		// remove_all_actions( 'edd_purchase_form_after_user_info' );
+		// remove_all_actions( 'edd_purchase_form_register_fields' );
+		// remove_all_actions( 'edd_purchase_form_login_fields' );
+		// remove_all_actions( 'edd_register_fields_before' );
+		// remove_all_actions( 'edd_cc_form' );
+		// remove_all_actions( 'edd_checkout_form_top' );
+		// remove_all_actions( 'edd_payment_mode_select' );
+	}
+
+	/**
+	 * Prepares the Payment Intent for it to be completed in the "Pay for Order" page.
+	 * @param  integer $payment_id [description]
+	 * @return [type]              [description]
+	 */
+	public function prepare_intent_for_payment_pay_page( $payment_id = 0 ) {
+		if ( ! $payment_id ) {
+			$payment_id = absint( get_query_var( 'payment-pay' ) );
+			$payment_id = absint( $_GET['payment-pay'] );
+		}
+
+		$payment_intent = $this->get_payment_intent( $payment_id );
+
+		if ( ! $payment_intent ) {
+			// throw new Exception( 'Payment Intent not found', __( 'Payment Intent not found for payment #' . $payment_id, 'woocommerce-gateway-stripe' ) );
+		}
+
+		if ( 'requires_payment_method' === $payment_intent->status && isset( $payment_intent->last_payment_error ) && 'authentication_required' === $payment_intent->last_payment_error->code ) {
+			$payment_intent = StripeAPI::request(
+				array(
+					'payment_method' => $payment_intent->last_payment_error->source->id,
+				),
+				'payment_intents/' . $payment_intent->id . '/confirm'
+			);
+
+			if ( isset( $payment_intent->error ) ) {
+				throw new Exception( print_r( $payment_intent, true ), $payment_intent->error->message );
+			}
+		}
+
+		$this->payment_pay_intent = $payment_intent;
+	}
+
+	/**
+	 * Renders hidden inputs on the "Pay for Order" page in order to let Stripe handle PaymentIntents.
+	 * @param  [type] $order [description]
+	 * @return [type]        [description]
+	 */
+	public function render_payment_intent_inputs( $payment_id = 0 ) {
+		if ( ! $payment_id ) {
+			$payment_id = absint( get_query_var( 'payment-pay' ) );
+			$payment_id = absint( $_GET['payment-pay'] );
+		}
+
+		if ( ! isset( $this->payment_pay_intent ) ) {
+			$this->prepare_intent_for_payment_pay_page( $payment_id );
+		}
+
+		$verification_url = add_query_arg(
+			array(
+				'payment_id'         => $payment_id,
+				'nonce'              => wp_create_nonce( 'edd_stripe_confirm_pi' ),
+				'redirect_to'        => rawurlencode( edd_get_checkout_uri() ),
+				// 'redirect_to'        => edd_get_checkout_uri(),
+				'is_pay_for_payment' => true,
+			),
+			admin_url( 'admin-ajax.php' )
+		);
+
+		// 'edd_stripe_verify_intent'
+
+		echo '<input type="hidden" id="stripe-intent-id" value="' . esc_attr( $this->payment_pay_intent->client_secret ) . '" />';
+		echo '<input type="hidden" id="stripe-intent-return" value="' . esc_attr( $verification_url ) . '" />';
 	}
 
 }

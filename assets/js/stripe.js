@@ -33,6 +33,8 @@
 				console.log(xhr.responseText);
 				// window.location = 'https://facebook.com';
 			});
+
+			this.maybeConfirmIntent();
 		}
 
 		createElements() {
@@ -102,9 +104,55 @@
 			this.stripeCvc.mount('#stripe-cvc-element');
 		}
 
+		maybeConfirmIntent() {
+			if ( ! $( '#stripe-intent-id' ).length || ! $( '#stripe-intent-return' ).length ) {
+				return;
+			}
+
+			const intentSecret = $( '#stripe-intent-id' ).val();
+			const returnURL    = $( '#stripe-intent-return' ).val();
+
+			this.openIntentModal( intentSecret, returnURL, true, false );
+		}
+
+		/**
+		 * Opens the modal for PaymentIntent authorizations.
+		 *
+		 * @param {string}  intentClientSecret The client secret of the intent.
+		 * @param {string}  redirectURL        The URL to ping on fail or redirect to on success.
+		 * @param {boolean} alwaysRedirect     If set to true, an immediate redirect will happen no matter the result.
+		 *                                     If not, an error will be displayed on failure.
+		 * @param {boolean} isSetupIntent      If set to true, ameans that the flow is handling a Setup Intent.
+		 *                                     If false, it's a Payment Intent.
+		 */
+		openIntentModal( intentClientSecret, redirectURL, alwaysRedirect, isSetupIntent ) {
+			this.stripe[ isSetupIntent ? 'handleCardSetup' : 'handleCardPayment' ]( intentClientSecret )
+				.then( function( response ) {
+					if ( response.error ) {
+						throw response.error;
+					}
+
+					const intent = response[ isSetupIntent ? 'setupIntent' : 'paymentIntent' ];
+					if ( 'requires_capture' !== intent.status && 'succeeded' !== intent.status ) {
+						return;
+					}
+
+					window.location = redirectURL;
+				} )
+				.catch( function( error ) {
+					if ( alwaysRedirect ) {
+						return window.location = redirectURL;
+					}
+
+					$( document.body ).trigger( 'stripeError', { error: error } );
+					// wc_stripe_form.form && wc_stripe_form.form.removeClass( 'processing' );
+
+					// Report back to the server.
+					$.get( redirectURL + '&is_ajax' );
+				} );
+		}
+
 		onSubmit() {
-			console.log('prevented');
-			return false;
 			if (!this.isStripeChosen()) {
 				return true;
 			}
@@ -143,8 +191,7 @@
 			const billingDetails = this.getBillingDetails();
 
 			// Handle card payments.
-			return this.stripe.createSource(this.stripeCard, billingDetails)
-				.then(this.sourceResponse);
+			return this.stripe.createSource(this.stripeCard, billingDetails).then(this.sourceResponse);
 		}
 
 		/**
