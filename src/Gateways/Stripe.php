@@ -362,7 +362,7 @@ class Stripe extends StripePayments {
 		}
 
 		// Process valid response.
-		$this->process_response( $response, $payment_id, $purchase_data );
+		$this->process_response( $response, $payment_id );
 
 		// Empty the shopping cart
 		edd_empty_cart();
@@ -572,19 +572,85 @@ class Stripe extends StripePayments {
 
 		$verification_url = add_query_arg(
 			array(
+				'action'             => 'edd_stripe_verify_intent',
 				'payment_id'         => $payment_id,
 				'nonce'              => wp_create_nonce( 'edd_stripe_confirm_pi' ),
-				'redirect_to'        => rawurlencode( edd_get_checkout_uri() ),
+				'redirect_to'        => rawurlencode( edd_get_success_page_uri() ),
 				// 'redirect_to'        => edd_get_checkout_uri(),
 				'is_pay_for_payment' => true,
 			),
 			admin_url( 'admin-ajax.php' )
 		);
 
-		// 'edd_stripe_verify_intent'
-
 		echo '<input type="hidden" id="stripe-intent-id" value="' . esc_attr( $this->payment_pay_intent->client_secret ) . '" />';
 		echo '<input type="hidden" id="stripe-intent-return" value="' . esc_attr( $verification_url ) . '" />';
+	}
+
+	/**
+	 * Executed between the "Checkout" and "Thank you" pages, this
+	 * method updates orders based on the status of associated PaymentIntents.
+	 * @param  [type] $order [description]
+	 * @return [type]        [description]
+	 */
+	public function verify_intent_after_checkout( $payment_id ) {
+		$payment_gateway = edd_get_payment_gateway( $payment_id );
+		if ( $payment_gateway !== $this->gateway_id ) {
+			// If this is not the payment method, an intent would not be available.
+			return;
+		}
+
+		$payment_intent = $this->get_payment_intent( $payment_id );
+		if ( ! $payment_intent ) {
+			// No intent, redirect to the order received page for further actions.
+			return;
+		}
+
+		// A webhook might have modified or locked the order while the intent was retreived. This ensures we are reading the right status.
+		clean_post_cache( $payment_id );
+		$payment_status = edd_get_payment_status( $payment_id );
+
+		edd_debug_log( $payment_status );
+		edd_debug_log( print_r( $payment_intent, true ) );
+
+		if ( 'pending' !== $payment_status && 'failed' !== $payment_status ) {
+			// If payment has already been completed, this function is redundant.
+			return;
+		}
+
+		if ( 'setup_intent' === $payment_intent->object && 'succeeded' === $payment_intent->status ) {
+			// Empty the shopping cart
+			edd_empty_cart();
+			edd_update_payment_status( $payment_id, 'publish' );
+		} elseif ( 'succeeded' === $payment_intent->status || 'requires_capture' === $payment_intent->status ) {
+			// Proceed with the payment completion.
+			$this->process_response( end( $payment_intent->charges->data ), $payment_id );
+		} elseif ( 'requires_payment_method' === $payment_intent->status ) {
+			// `requires_payment_method` means that SCA got denied for the current payment method.
+			$this->failed_sca_auth( $payment_id, $payment_intent );
+		}
+	}
+
+	/**
+	 * Checks if the payment intent associated with an order failed and records the event.
+	 * @param  [type] $payment_id     [description]
+	 * @param  [type] $payment_intent [description]
+	 * @return [type]                 [description]
+	 */
+	public function failed_sca_auth( $payment_id, $payment_intent ) {
+		// If the order has already failed, do not repeat the same message.
+		if ( 'failed' === edd_get_payment_status( $payment_id ) ) {
+			return;
+		}
+
+		edd_update_payment_status( $payment_id, 'failed' );
+
+		// Load the right message and update the status.
+		$status_message = isset( $payment_intent->last_payment_error )
+			/* translators: 1) The error message that was received from Stripe. */
+			? sprintf( __( 'Stripe SCA authentication failed. Reason: %s', 'woocommerce-gateway-stripe' ), $payment_intent->last_payment_error->message )
+			: __( 'Stripe SCA authentication failed.', 'woocommerce-gateway-stripe' );
+
+		edd_insert_payment_note( $payment_id, $status_message );
 	}
 
 }

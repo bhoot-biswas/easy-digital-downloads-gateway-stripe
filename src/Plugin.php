@@ -116,6 +116,9 @@ class Plugin {
 	public function load() {
 		Loader::instance();
 		Gateways\Stripe::instance();
+
+		// Intent controller.
+		new StripeIntentController();
 	}
 
 	/**

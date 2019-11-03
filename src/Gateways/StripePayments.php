@@ -194,12 +194,11 @@ abstract class StripePayments {
 
 	/**
 	 * Store extra meta data for an order from a Stripe Response.
-	 * @param  [type] $response      [description]
-	 * @param  [type] $payment_id    [description]
-	 * @param  [type] $purchase_data [description]
-	 * @return [type]                [description]
+	 * @param  [type] $response   [description]
+	 * @param  [type] $payment_id [description]
+	 * @return [type]             [description]
 	 */
-	public function process_response( $response, $payment_id, $purchase_data ) {
+	public function process_response( $response, $payment_id ) {
 		// edd_debug_log( 'Processing response: ' . print_r( $response, true ) );
 
 		$captured = ( isset( $response->captured ) && $response->captured ) ? 'yes' : 'no';
@@ -237,7 +236,7 @@ abstract class StripePayments {
 				edd_insert_payment_note( $payment_id, $localized_message );
 
 				// Problems? send back
-				edd_send_back_to_checkout( '?payment-mode=' . $purchase_data['post_data']['edd-gateway'] );
+				edd_send_back_to_checkout( '?payment-mode=' . $this->gateway_id );
 			}
 		} else {
 			edd_update_payment_status( $payment_id, 'pending' );
