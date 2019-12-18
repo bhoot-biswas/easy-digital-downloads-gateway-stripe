@@ -97,7 +97,7 @@ class StripeCustomer {
 		}
 
 		// translators: %1$s First name, %2$s Second name, %3$s EDD customer ID.
-		$description = sprintf( __( 'Name: %1$s %2$s, EDD customer ID: %3$s', 'woocommerce-gateway-stripe' ), $billing_first_name, $billing_last_name, $customer->id );
+		$description = sprintf( __( 'Name: %1$s %2$s, EDD customer ID: %3$s', 'edd-gateway-stripe' ), $billing_first_name, $billing_last_name, $customer->id );
 
 		$defaults = array(
 			'email'       => $customer->email,

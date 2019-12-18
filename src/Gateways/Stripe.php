@@ -165,37 +165,37 @@ class Stripe extends StripePayments {
 			),
 			'stripe_test_publishable_key' => array(
 				'id'   => 'stripe_test_publishable_key',
-				'name' => __( 'Test Publishable Key', 'woocommerce-gateway-stripe' ),
-				'desc' => __( 'Get your API keys from your stripe account.', 'woocommerce-gateway-stripe' ),
+				'name' => __( 'Test Publishable Key', 'edd-gateway-stripe' ),
+				'desc' => __( 'Get your API keys from your stripe account.', 'edd-gateway-stripe' ),
 				'type' => 'text',
 				'std'  => '',
 			),
 			'stripe_test_secret_key'      => array(
 				'id'   => 'stripe_test_secret_key',
-				'name' => __( 'Test Secret Key', 'woocommerce-gateway-stripe' ),
-				'desc' => __( 'Get your API keys from your stripe account.', 'woocommerce-gateway-stripe' ),
+				'name' => __( 'Test Secret Key', 'edd-gateway-stripe' ),
+				'desc' => __( 'Get your API keys from your stripe account.', 'edd-gateway-stripe' ),
 				'type' => 'password',
 				'std'  => '',
 			),
 			'stripe_publishable_key'      => array(
 				'id'   => 'stripe_publishable_key',
-				'name' => __( 'Live Publishable Key', 'woocommerce-gateway-stripe' ),
-				'desc' => __( 'Get your API keys from your stripe account.', 'woocommerce-gateway-stripe' ),
+				'name' => __( 'Live Publishable Key', 'edd-gateway-stripe' ),
+				'desc' => __( 'Get your API keys from your stripe account.', 'edd-gateway-stripe' ),
 				'type' => 'text',
 				'std'  => '',
 			),
 			'stripe_secret_key'           => array(
 				'id'   => 'stripe_secret_key',
-				'name' => __( 'Live Secret Key', 'woocommerce-gateway-stripe' ),
-				'desc' => __( 'Get your API keys from your stripe account.', 'woocommerce-gateway-stripe' ),
+				'name' => __( 'Live Secret Key', 'edd-gateway-stripe' ),
+				'desc' => __( 'Get your API keys from your stripe account.', 'edd-gateway-stripe' ),
 				'type' => 'password',
 				'std'  => '',
 			),
 			'stripe_capture'              => array(
 				'id'    => 'stripe_capture',
-				'name'  => __( 'Capture', 'woocommerce-gateway-stripe' ),
-				'label' => __( 'Capture charge immediately', 'woocommerce-gateway-stripe' ),
-				'desc'  => __( 'Whether or not to immediately capture the charge. When unchecked, the charge issues an authorization and will need to be captured later. Uncaptured charges expire in 7 days.', 'woocommerce-gateway-stripe' ),
+				'name'  => __( 'Capture', 'edd-gateway-stripe' ),
+				'label' => __( 'Capture charge immediately', 'edd-gateway-stripe' ),
+				'desc'  => __( 'Whether or not to immediately capture the charge. When unchecked, the charge issues an authorization and will need to be captured later. Uncaptured charges expire in 7 days.', 'edd-gateway-stripe' ),
 				'type'  => 'checkbox',
 				'std'   => 1,
 			),
@@ -647,8 +647,8 @@ class Stripe extends StripePayments {
 		// Load the right message and update the status.
 		$status_message = isset( $payment_intent->last_payment_error )
 			/* translators: 1) The error message that was received from Stripe. */
-			? sprintf( __( 'Stripe SCA authentication failed. Reason: %s', 'woocommerce-gateway-stripe' ), $payment_intent->last_payment_error->message )
-			: __( 'Stripe SCA authentication failed.', 'woocommerce-gateway-stripe' );
+			? sprintf( __( 'Stripe SCA authentication failed. Reason: %s', 'edd-gateway-stripe' ), $payment_intent->last_payment_error->message )
+			: __( 'Stripe SCA authentication failed.', 'edd-gateway-stripe' );
 
 		edd_insert_payment_note( $payment_id, $status_message );
 	}
