@@ -9,7 +9,7 @@ module.exports = function( grunt ) {
 
 		addtextdomain: {
 			options: {
-				textdomain: 'easy-digital-downloads-gateway-stripe',
+				textdomain: 'edd-gateway-stripe',
 			},
 			update_all_domains: {
 				options: {
@@ -33,7 +33,7 @@ module.exports = function( grunt ) {
 					domainPath: '/languages',
 					exclude: [ '\.git/*', 'bin/*', 'node_modules/*', 'tests/*' ],
 					mainFile: 'easy-digital-downloads-gateway-stripe.php',
-					potFilename: 'easy-digital-downloads-gateway-stripe.pot',
+					potFilename: 'edd-gateway-stripe.pot',
 					potHeaders: {
 						poedit: true,
 						'x-poedit-keywordslist': true
