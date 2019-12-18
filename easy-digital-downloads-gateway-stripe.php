@@ -1,13 +1,13 @@
 <?php
 /**
- * Plugin Name:     Easy Digital Downloads Gateway Stripe
- * Plugin URI:      PLUGIN SITE HERE
- * Description:     PLUGIN DESCRIPTION HERE
- * Author:          YOUR NAME HERE
- * Author URI:      YOUR SITE HERE
+ * Plugin Name:     Stripe gateway for Easy Digital Downloads
+ * Plugin URI:      https://bengal-studio.com/plugins/stripe-gateway-for-easy-digital-downloads/
+ * Description:     Take credit card payments on your store using Stripe.
+ * Author:          Bengal Studio
+ * Author URI:      https://bengal-studio.com
  * Text Domain:     edd-gateway-stripe
  * Domain Path:     /languages
- * Version:         0.1.0
+ * Version:         1.0.0
  *
  * @package         EDD_Gateway_Stripe
  */

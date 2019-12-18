@@ -206,8 +206,6 @@ abstract class StripePayments {
 		// Store charge data.
 		edd_update_payment_meta( $payment_id, '_stripe_charge_captured', $captured );
 
-		edd_debug_log( 'Captured: ' . $captured );
-
 		if ( 'yes' === $captured ) {
 			/**
 			 * Charge can be captured but in a pending state. Payment methods
@@ -239,7 +237,7 @@ abstract class StripePayments {
 				edd_send_back_to_checkout( '?payment-mode=' . $this->gateway_id );
 			}
 		} else {
-			edd_update_payment_status( $payment_id, 'pending' );
+			edd_update_payment_status( $payment_id, 'publish' );
 			/* translators: transaction id */
 			edd_insert_payment_note( $payment_id, sprintf( __( 'Stripe charge authorized (Charge ID: %s). Process order to take payment, or cancel to remove the pre-authorization.', 'edd-gateway-stripe' ), $response->id ) );
 		}
