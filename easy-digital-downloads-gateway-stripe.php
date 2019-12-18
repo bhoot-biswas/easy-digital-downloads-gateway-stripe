@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:     Stripe gateway for Easy Digital Downloads
+ * Plugin Name:     Stripe Gateway for Easy Digital Downloads
  * Plugin URI:      https://bengal-studio.com/plugins/stripe-gateway-for-easy-digital-downloads/
  * Description:     Take credit card payments on your store using Stripe.
  * Author:          Bengal Studio
