@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name:     Stripe Gateway for Easy Digital Downloads
- * Plugin URI:      https://bengal-studio.com/plugins/stripe-gateway-for-easy-digital-downloads/
+ * Plugin Name:     Payment Gateway Stripe for Easy Digital Downloads
+ * Plugin URI:      https://bengal-studio.com/plugins/payment-gateway-stripe-for-easy-digital-downloads/
  * Description:     Take credit card payments on your store using Stripe.
  * Author:          Bengal Studio
  * Author URI:      https://bengal-studio.com
- * Text Domain:     edd-gateway-stripe
+ * Text Domain:     payment-gateway-stripe
  * Domain Path:     /languages
  * Version:         1.0.0
  *
@@ -31,7 +31,7 @@ if ( is_readable( $autoloader ) ) {
 		error_log(  // phpcs:ignore
 			sprintf(
 				/* translators: 1: composer command. 2: plugin directory */
-				esc_html__( 'Your installation of the Easy Digital Downloads Gateway Stripe feature plugin is incomplete. Please run %1$s within the %2$s directory.', 'edd-gateway-stripe' ),
+				esc_html__( 'Your installation of the Payment Gateway Stripe for Easy Digital Downloads plugin is incomplete. Please run %1$s within the %2$s directory.', 'payment-gateway-stripe' ),
 				'`composer install`',
 				'`' . esc_html( str_replace( ABSPATH, '', __DIR__ ) ) . '`'
 			)
@@ -49,7 +49,7 @@ if ( is_readable( $autoloader ) ) {
 					<?php
 					printf(
 						/* translators: 1: composer command. 2: plugin directory */
-						esc_html__( 'Your installation of the Easy Digital Downloads Gateway Stripe feature plugin is incomplete. Please run %1$s within the %2$s directory.', 'edd-gateway-stripe' ),
+						esc_html__( 'Your installation of the Payment Gateway Stripe for Easy Digital Downloads plugin is incomplete. Please run %1$s within the %2$s directory.', 'payment-gateway-stripe' ),
 						'<code>composer install</code>',
 						'<code>' . esc_html( str_replace( ABSPATH, '', __DIR__ ) ) . '</code>'
 					);

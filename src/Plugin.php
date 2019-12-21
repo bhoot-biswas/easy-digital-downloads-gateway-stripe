@@ -73,7 +73,7 @@ class Plugin {
 	public function on_activation() {}
 
 	/**
-	 * Remove Easy Digital Downloads Gateway Stripe scheduled actions on deactivate.
+	 * Remove Payment Gateway Stripe for Easy Digital Downloads scheduled actions on deactivate.
 	 *
 	 * @return void
 	 */
@@ -164,13 +164,13 @@ class Plugin {
 		if ( $has_valid_wp_version ) {
 			$message = sprintf(
 				/* translators: URL of Easy Digital Downloads plugin */
-				__( 'The Easy Digital Downloads Gateway Stripe feature plugin requires <a href="%s">Easy Digital Downloads</a> 2.0 or greater to be installed and active.', 'edd-gateway-stripe' ),
+				__( 'The Payment Gateway Stripe for Easy Digital Downloads plugin requires <a href="%s">Easy Digital Downloads</a> 2.0 or greater to be installed and active.', 'payment-gateway-stripe' ),
 				'https://wordpress.org/plugins/easy-digital-downloads/'
 			);
 		} else {
 			$message = sprintf(
 				/* translators: 1: URL of WordPress.org, 2: URL of Easy Digital Downloads plugin */
-				__( 'The Easy Digital Downloads Gateway Stripe feature plugin requires both <a href="%1$s">WordPress</a> 5.2 or greater and <a href="%2$s">Easy Digital Downloads</a> 3.6 or greater to be installed and active.', 'edd-gateway-stripe' ),
+				__( 'The Payment Gateway Stripe for Easy Digital Downloads plugin requires both <a href="%1$s">WordPress</a> 5.2 or greater and <a href="%2$s">Easy Digital Downloads</a> 3.6 or greater to be installed and active.', 'payment-gateway-stripe' ),
 				'https://wordpress.org/',
 				'https://wordpress.org/plugins/easy-digital-downloads/'
 			);
@@ -182,10 +182,10 @@ class Plugin {
 	 * Notify users that the plugin needs to be built.
 	 */
 	public function render_build_notice() {
-		$message_one = __( 'You have installed a development version of Easy Digital Downloads Gateway Stripe which requires files to be built. From the plugin directory, run <code>npm install</code> to install dependencies, <code>npm run build</code> to build the files.', 'edd-gateway-stripe' );
+		$message_one = __( 'You have installed a development version of Payment Gateway Stripe for Easy Digital Downloads which requires files to be built. From the plugin directory, run <code>npm install</code> to install dependencies, <code>npm run build</code> to build the files.', 'payment-gateway-stripe' );
 		$message_two = sprintf(
 			/* translators: 1: URL of GitHub Repository build page */
-			__( 'Or you can download a pre-built version of the plugin by visiting <a href="%1$s">the releases page in the repository</a>.', 'edd-gateway-stripe' ),
+			__( 'Or you can download a pre-built version of the plugin by visiting <a href="%1$s">the releases page in the repository</a>.', 'payment-gateway-stripe' ),
 			'https://github.com/BegnalStudio/edd-gateway-stripe/releases'
 		);
 		printf( '<div class="error"><p>%s %s</p></div>', $message_one, $message_two ); /* WPCS: xss ok. */

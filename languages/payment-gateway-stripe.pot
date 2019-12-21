@@ -1,11 +1,12 @@
 # Copyright (C) 2019 Bengal Studio
-# This file is distributed under the same license as the Stripe Gateway for Easy Digital Downloads package.
+# This file is distributed under the same license as the Payment Gateway Stripe for Easy Digital Downloads package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Stripe Gateway for Easy Digital Downloads 1.0.0\n"
+"Project-Id-Version: Payment Gateway Stripe for Easy Digital Downloads 1.0.0\n"
 "Report-Msgid-Bugs-To: "
-"https://wordpress.org/support/plugin/easy-digital-downloads-gateway-stripe\n"
-"POT-Creation-Date: 2019-12-18 06:27:05+00:00\n"
+"https://wordpress.org/support/plugin/payment-gateway-stripe-for-easy-"
+"digital-downloads\n"
+"POT-Creation-Date: 2019-12-21 04:25:35+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -25,11 +26,11 @@ msgstr ""
 "X-Poedit-Bookmarks: \n"
 "X-Textdomain-Support: yes\n"
 
-#: easy-digital-downloads-gateway-stripe.php:34
-#: easy-digital-downloads-gateway-stripe.php:52
+#: payment-gateway-stripe-for-easy-digital-downloads.php:34
+#: payment-gateway-stripe-for-easy-digital-downloads.php:52
 #. translators: 1: composer command. 2: plugin directory
 msgid ""
-"Your installation of the Easy Digital Downloads Gateway Stripe feature "
+"Your installation of the Payment Gateway Stripe for Easy Digital Downloads "
 "plugin is incomplete. Please run %1$s within the %2$s directory."
 msgstr ""
 
@@ -184,7 +185,7 @@ msgstr ""
 #: src/Plugin.php:167
 #. translators: URL of Easy Digital Downloads plugin
 msgid ""
-"The Easy Digital Downloads Gateway Stripe feature plugin requires <a "
+"The Payment Gateway Stripe for Easy Digital Downloads plugin requires <a "
 "href=\"%s\">Easy Digital Downloads</a> 2.0 or greater to be installed and "
 "active."
 msgstr ""
@@ -193,17 +194,17 @@ msgstr ""
 #. translators: 1: URL of WordPress.org, 2: URL of Easy Digital Downloads
 #. plugin
 msgid ""
-"The Easy Digital Downloads Gateway Stripe feature plugin requires both <a "
-"href=\"%1$s\">WordPress</a> 5.2 or greater and <a href=\"%2$s\">Easy "
+"The Payment Gateway Stripe for Easy Digital Downloads plugin requires both "
+"<a href=\"%1$s\">WordPress</a> 5.2 or greater and <a href=\"%2$s\">Easy "
 "Digital Downloads</a> 3.6 or greater to be installed and active."
 msgstr ""
 
 #: src/Plugin.php:185
 msgid ""
-"You have installed a development version of Easy Digital Downloads Gateway "
-"Stripe which requires files to be built. From the plugin directory, run "
-"<code>npm install</code> to install dependencies, <code>npm run "
-"build</code> to build the files."
+"You have installed a development version of Payment Gateway Stripe for Easy "
+"Digital Downloads which requires files to be built. From the plugin "
+"directory, run <code>npm install</code> to install dependencies, <code>npm "
+"run build</code> to build the files."
 msgstr ""
 
 #: src/Plugin.php:188
@@ -236,11 +237,13 @@ msgid "Payment verification error: %s"
 msgstr ""
 
 #. Plugin Name of the plugin/theme
-msgid "Stripe Gateway for Easy Digital Downloads"
+msgid "Payment Gateway Stripe for Easy Digital Downloads"
 msgstr ""
 
 #. Plugin URI of the plugin/theme
-msgid "https://bengal-studio.com/plugins/stripe-gateway-for-easy-digital-downloads/"
+msgid ""
+"https://bengal-studio.com/plugins/payment-gateway-stripe-for-easy-digital-"
+"downloads/"
 msgstr ""
 
 #. Description of the plugin/theme
