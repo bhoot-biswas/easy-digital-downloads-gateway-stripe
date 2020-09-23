@@ -23,7 +23,7 @@ if ( ! defined( 'EDD_GATEWAY_STRIPE_PLUGIN_FILE' ) ) {
 
 // Include the main EDD_Gateway_Stripe class.
 if ( ! class_exists( 'EDD_Gateway_Stripe', false ) ) {
-	include_once dirname( EDD_GATEWAY_STRIPE_PLUGIN_FILE ) . '/includes/class-edd-gateway-stripe.php';
+	// include_once dirname( EDD_GATEWAY_STRIPE_PLUGIN_FILE ) . '/includes/class-edd-gateway-stripe.php';
 }
 
 /**
@@ -54,4 +54,4 @@ function edd_gateway_stripe() {
 	}
 }
 
-add_action( 'plugins_loaded', 'edd_gateway_stripe', 100 );
+// add_action( 'plugins_loaded', 'edd_gateway_stripe', 100 );
