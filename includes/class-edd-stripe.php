@@ -138,22 +138,14 @@ final class EDD_Stripe {
 	 * Include required core files used in admin and on the frontend.
 	 */
 	private function includes() {
-		// Functions.
-		include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/edd-reviews-core-functions.php';
-		include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/edd-reviews-conditional-functions.php';
-		include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/edd-reviews-template-functions.php';
-		include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/edd-reviews-user-functions.php';
-		include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/edd-reviews-template-hooks.php';
-
 		// Classes.
-		include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-reviews-post-types.php';
-		include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-reviews-comments.php';
-		include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-reviews-template-loader.php';
-
-		if ( $this->is_request( 'admin' ) ) {
-			include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/admin/class-edd-reviews-admin.php';
-			new EDD_Stripe_Admin();
-		}
+		require_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-stripe-exception.php';
+		require_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-stripe-helper.php';
+		include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-stripe-api.php';
+		require_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/abstracts/abstract-edd-stripe-payment-gateway.php';
+		require_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-stripe-gateway.php';
+		require_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-stripe-customer.php';
+		require_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-stripe-intent-controller.php';
 
 		if ( $this->is_request( 'frontend' ) ) {
 			$this->frontend_includes();
@@ -165,7 +157,6 @@ final class EDD_Stripe {
 	 * Include required frontend files.
 	 */
 	public function frontend_includes() {
-		include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-reviews-frontend-scripts.php';
 	}
 
 	/**
@@ -174,7 +165,6 @@ final class EDD_Stripe {
 	 * @since 1.0.0
 	 */
 	public function frontend_hooks() {
-		EDD_Stripe_Frontend_Scripts::init();
 	}
 
 	/**
@@ -183,9 +173,6 @@ final class EDD_Stripe {
 	 * @since 1.0.0
 	 */
 	private function init_hooks() {
-		EDD_Stripe_Post_Types::init();
-		EDD_Stripe_Template_Loader::init();
-		EDD_Stripe_Comments::init();
 	}
 
 	/**
