@@ -1,15 +1,14 @@
 <?php
-namespace BengalStudio\EDD\Stripe;
-
-// Exit if accessed directly
-defined( 'ABSPATH' ) || exit;
-
-use EDD_Customer;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
- * StripeCustomer class.
+ * EDD_Stripe_Customer class.
+ *
+ * Represents a Stripe Customer.
  */
-class StripeCustomer {
+class EDD_Stripe_Customer {
 
 	/**
 	 * Stripe customer ID.
@@ -109,7 +108,7 @@ class StripeCustomer {
 		$defaults['metadata'] = apply_filters( 'wc_stripe_customer_metadata', $metadata, $customer );
 
 		$args     = wp_parse_args( $args, $defaults );
-		$response = StripeAPI::request( apply_filters( 'wc_stripe_create_customer_args', $args ), 'customers' );
+		$response = EDD_Stripe_API::request( apply_filters( 'wc_stripe_create_customer_args', $args ), 'customers' );
 
 		if ( ! empty( $response->error ) ) {
 			edd_debug_log( print_r( $response, true ) );
@@ -121,7 +120,7 @@ class StripeCustomer {
 
 		EDD()->customer_meta->update_meta( $this->get_customer_id(), '_stripe_customer_id', $response->id );
 
-		do_action( 'woocommerce_stripe_add_customer', $args, $response );
+		do_action( 'edd_stripe_add_customer', $args, $response );
 
 		return $response->id;
 	}
