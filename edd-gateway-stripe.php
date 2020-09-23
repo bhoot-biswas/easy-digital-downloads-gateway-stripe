@@ -5,7 +5,7 @@
  * Description:     Take credit card payments on your store using Stripe.
  * Author:          Bengal Studio
  * Author URI:      https://bengal-studio.com
- * Text Domain:     payment-gateway-stripe
+ * Text Domain:     edd-gateway-stripe
  * Domain Path:     /languages
  * Version:         1.0.0
  *
