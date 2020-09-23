@@ -1,6 +1,4 @@
 <?php
-namespace BengalStudio\EDD\Stripe;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -8,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Provides static methods as helpers.
  */
-class StripeHelper {
+class EDD_Stripe_Helper {
 	/**
 	 * Get Stripe amount to pay.
 	 * @param  [type] $total    [description]
