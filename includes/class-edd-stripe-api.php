@@ -69,7 +69,7 @@ class EDD_Stripe_API {
 
 		// Return headers.
 		return apply_filters(
-			'edd_gateway_stripe_request_headers',
+			'edd_stripe_request_headers',
 			array(
 				'Authorization'              => 'Basic ' . base64_encode( self::get_secret_key() . ':' ),
 				'Stripe-Version'             => self::STRIPE_API_VERSION,
@@ -94,7 +94,7 @@ class EDD_Stripe_API {
 		if ( 'charges' === $api && 'POST' === $method ) {
 			$customer        = ! empty( $request['customer'] ) ? $request['customer'] : '';
 			$source          = ! empty( $request['source'] ) ? $request['source'] : $customer;
-			$idempotency_key = apply_filters( 'edd_gateway_stripe_idempotency_key', $request['metadata']['order_id'] . '-' . $source, $request );
+			$idempotency_key = apply_filters( 'edd_stripe_idempotency_key', $request['metadata']['order_id'] . '-' . $source, $request );
 
 			$headers['Idempotency-Key'] = $idempotency_key;
 		}
@@ -104,13 +104,13 @@ class EDD_Stripe_API {
 			array(
 				'method'  => $method,
 				'headers' => $headers,
-				'body'    => apply_filters( 'edd_gateway_stripe_request_body', $request, $api ),
+				'body'    => apply_filters( 'edd_stripe_request_body', $request, $api ),
 				'timeout' => 70,
 			)
 		);
 
 		if ( is_wp_error( $response ) || empty( $response['body'] ) ) {
-			throw new Exception( print_r( $response, true ), __( 'There was a problem connecting to the Stripe API endpoint.', 'edd-gateway-stripe' ) );
+			throw new EDD_Stripe_Exception( print_r( $response, true ), __( 'There was a problem connecting to the Stripe API endpoint.', 'edd-gateway-stripe' ) );
 		}
 
 		if ( $with_headers ) {
