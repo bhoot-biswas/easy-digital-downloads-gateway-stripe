@@ -13,53 +13,45 @@
  */
 
 // Exit if accessed directly
-defined( 'ABSPATH' ) || exit;
-
-use BengalStudio\EDD\Stripe\Plugin;
-
-/**
- * Autoload packages.
- *
- * We want to fail gracefully if `composer install` has not been executed yet, so we are checking for the autoloader.
- * If the autoloader is not present, let's log the failure and display a nice admin notice.
- */
-$autoloader = __DIR__ . '/vendor/autoload.php';
-if ( is_readable( $autoloader ) ) {
-	require $autoloader;
-} else {
-	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-		error_log(  // phpcs:ignore
-			sprintf(
-				/* translators: 1: composer command. 2: plugin directory */
-				esc_html__( 'Your installation of the Payment Gateway Stripe for Easy Digital Downloads plugin is incomplete. Please run %1$s within the %2$s directory.', 'payment-gateway-stripe' ),
-				'`composer install`',
-				'`' . esc_html( str_replace( ABSPATH, '', __DIR__ ) ) . '`'
-			)
-		);
-	}
-	/**
-	 * Outputs an admin notice if composer install has not been ran.
-	 */
-	add_action(
-		'admin_notices',
-		function() {
-			?>
-			<div class="notice notice-error">
-				<p>
-					<?php
-					printf(
-						/* translators: 1: composer command. 2: plugin directory */
-						esc_html__( 'Your installation of the Payment Gateway Stripe for Easy Digital Downloads plugin is incomplete. Please run %1$s within the %2$s directory.', 'payment-gateway-stripe' ),
-						'<code>composer install</code>',
-						'<code>' . esc_html( str_replace( ABSPATH, '', __DIR__ ) ) . '</code>'
-					);
-					?>
-				</p>
-			</div>
-			<?php
-		}
-	);
-	return;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-Plugin::instance()->init();
+if ( ! defined( 'EDD_GATEWAY_STRIPE_PLUGIN_FILE' ) ) {
+	define( 'EDD_GATEWAY_STRIPE_PLUGIN_FILE', __FILE__ );
+}
+
+// Include the main EDD_Gateway_Stripe class.
+if ( ! class_exists( 'EDD_Gateway_Stripe', false ) ) {
+	include_once dirname( EDD_GATEWAY_STRIPE_PLUGIN_FILE ) . '/includes/class-edd-gateway-stripe.php';
+}
+
+/**
+ * The main function responsible for returning the one true EDD_Gateway_Stripe
+ * Instance to functions everywhere.
+ *
+ * Use this function like you would a global variable, except without needing
+ * to declare the global.
+ *
+ * Example: <?php $edd_gateway_stripe = edd_gateway_stripe(); ?>
+ *
+ * @since  1.0.0
+ *
+ * @return object The one true EDD_Gateway_Stripe Instance
+ */
+function edd_gateway_stripe() {
+	if ( ! class_exists( 'Easy_Digital_Downloads' ) ) {
+
+		if ( ! class_exists( 'EDD_Gateway_Stripe_Extension_Activation' ) ) {
+			include_once 'includes/class-edd-gateway-stripe-extension-activation.php';
+		}
+
+		$activation = new EDD_Gateway_Stripe_Extension_Activation( plugin_dir_path( __FILE__ ), basename( __FILE__ ) );
+		$activation = $activation->run();
+
+	} else {
+		return EDD_Gateway_Stripe::instance();
+	}
+}
+
+add_action( 'plugins_loaded', 'edd_gateway_stripe', 100 );
