@@ -92,8 +92,8 @@ class Stripe extends StripePayments {
 	public function register_gateway( $gateways ) {
 		$default_stripe_info           = [];
 		$default_stripe_info['stripe'] = array(
-			'admin_label'    => __( 'Stripe', 'payment-gateway-stripe' ),
-			'checkout_label' => __( 'Credit Card (Stripe)', 'payment-gateway-stripe' ),
+			'admin_label'    => __( 'Stripe', 'edd-gateway-stripe' ),
+			'checkout_label' => __( 'Credit Card (Stripe)', 'edd-gateway-stripe' ),
 			'supports'       => array(),
 		);
 
@@ -146,7 +146,7 @@ class Stripe extends StripePayments {
 	 * @return [type]                   [description]
 	 */
 	public function register_gateway_section( $gateway_sections ) {
-		$gateway_sections['stripe'] = __( 'Stripe Payments', 'payment-gateway-stripe' );
+		$gateway_sections['stripe'] = __( 'Stripe Payments', 'edd-gateway-stripe' );
 
 		return $gateway_sections;
 	}
@@ -160,42 +160,42 @@ class Stripe extends StripePayments {
 		$default_stripe_settings = array(
 			'stripe'                      => array(
 				'id'   => 'stripe',
-				'name' => '<strong>' . __( 'Stripe Payments Settings', 'payment-gateway-stripe' ) . '</strong>',
+				'name' => '<strong>' . __( 'Stripe Payments Settings', 'edd-gateway-stripe' ) . '</strong>',
 				'type' => 'header',
 			),
 			'stripe_test_publishable_key' => array(
 				'id'   => 'stripe_test_publishable_key',
-				'name' => __( 'Test Publishable Key', 'payment-gateway-stripe' ),
-				'desc' => __( 'Get your API keys from your stripe account.', 'payment-gateway-stripe' ),
+				'name' => __( 'Test Publishable Key', 'edd-gateway-stripe' ),
+				'desc' => __( 'Get your API keys from your stripe account.', 'edd-gateway-stripe' ),
 				'type' => 'text',
 				'std'  => '',
 			),
 			'stripe_test_secret_key'      => array(
 				'id'   => 'stripe_test_secret_key',
-				'name' => __( 'Test Secret Key', 'payment-gateway-stripe' ),
-				'desc' => __( 'Get your API keys from your stripe account.', 'payment-gateway-stripe' ),
+				'name' => __( 'Test Secret Key', 'edd-gateway-stripe' ),
+				'desc' => __( 'Get your API keys from your stripe account.', 'edd-gateway-stripe' ),
 				'type' => 'password',
 				'std'  => '',
 			),
 			'stripe_publishable_key'      => array(
 				'id'   => 'stripe_publishable_key',
-				'name' => __( 'Live Publishable Key', 'payment-gateway-stripe' ),
-				'desc' => __( 'Get your API keys from your stripe account.', 'payment-gateway-stripe' ),
+				'name' => __( 'Live Publishable Key', 'edd-gateway-stripe' ),
+				'desc' => __( 'Get your API keys from your stripe account.', 'edd-gateway-stripe' ),
 				'type' => 'text',
 				'std'  => '',
 			),
 			'stripe_secret_key'           => array(
 				'id'   => 'stripe_secret_key',
-				'name' => __( 'Live Secret Key', 'payment-gateway-stripe' ),
-				'desc' => __( 'Get your API keys from your stripe account.', 'payment-gateway-stripe' ),
+				'name' => __( 'Live Secret Key', 'edd-gateway-stripe' ),
+				'desc' => __( 'Get your API keys from your stripe account.', 'edd-gateway-stripe' ),
 				'type' => 'password',
 				'std'  => '',
 			),
 			'stripe_capture'              => array(
 				'id'    => 'stripe_capture',
-				'name'  => __( 'Capture', 'payment-gateway-stripe' ),
-				'label' => __( 'Capture charge immediately', 'payment-gateway-stripe' ),
-				'desc'  => __( 'Whether or not to immediately capture the charge. When unchecked, the charge issues an authorization and will need to be captured later. Uncaptured charges expire in 7 days.', 'payment-gateway-stripe' ),
+				'name'  => __( 'Capture', 'edd-gateway-stripe' ),
+				'label' => __( 'Capture charge immediately', 'edd-gateway-stripe' ),
+				'desc'  => __( 'Whether or not to immediately capture the charge. When unchecked, the charge issues an authorization and will need to be captured later. Uncaptured charges expire in 7 days.', 'edd-gateway-stripe' ),
 				'type'  => 'checkbox',
 				'std'   => 1,
 			),
@@ -296,7 +296,7 @@ class Stripe extends StripePayments {
 	 */
 	public function process_purchase( $purchase_data ) {
 		if ( empty( $purchase_data['post_data']['stripe_source'] ) ) {
-			edd_set_error( 'missing_source_id', __( 'Missing Source ID, please try again', 'payment-gateway-stripe' ) );
+			edd_set_error( 'missing_source_id', __( 'Missing Source ID, please try again', 'edd-gateway-stripe' ) );
 		}
 
 		$errors = edd_get_errors();
@@ -379,7 +379,7 @@ class Stripe extends StripePayments {
 		<?php do_action( 'edd_before_cc_fields' ); ?>
 
 		<fieldset id="edd_cc_fields" class="edd-do-validate">
-			<legend><?php _e( 'Credit Card Info', 'payment-gateway-stripe' ); ?></legend>
+			<legend><?php _e( 'Credit Card Info', 'edd-gateway-stripe' ); ?></legend>
 			<?php if ( is_ssl() ) : ?>
 				<div id="edd_secure_site_wrapper">
 					<span class="padlock">
@@ -387,19 +387,19 @@ class Stripe extends StripePayments {
 							<path d="M5 12h8V9c0-2.203-1.797-4-4-4S5 6.797 5 9v3zm13 1.5v9c0 .828-.672 1.5-1.5 1.5h-15C.672 24 0 23.328 0 22.5v-9c0-.828.672-1.5 1.5-1.5H2V9c0-3.844 3.156-7 7-7s7 3.156 7 7v3h.5c.828 0 1.5.672 1.5 1.5z"/>
 						</svg>
 					</span>
-					<span><?php _e( 'This is a secure SSL encrypted payment.', 'payment-gateway-stripe' ); ?></span>
+					<span><?php _e( 'This is a secure SSL encrypted payment.', 'edd-gateway-stripe' ); ?></span>
 				</div>
 			<?php endif; ?>
 			<?php if ( edd_is_test_mode() ) : ?>
-				<?php printf( __( 'TEST MODE ENABLED. In test mode, you can use the card number 4242424242424242 with any CVC and a valid expiration date or check the <a href="%s" target="_blank">Testing Stripe documentation</a> for more card numbers.', 'payment-gateway-stripe' ), 'https://stripe.com/docs/testing' ); ?>
+				<?php printf( __( 'TEST MODE ENABLED. In test mode, you can use the card number 4242424242424242 with any CVC and a valid expiration date or check the <a href="%s" target="_blank">Testing Stripe documentation</a> for more card numbers.', 'edd-gateway-stripe' ), 'https://stripe.com/docs/testing' ); ?>
 			<?php endif; ?>
 			<p id="edd-card-number-wrap">
 				<label for="card_number" class="edd-label">
-					<?php _e( 'Card Number', 'payment-gateway-stripe' ); ?>
+					<?php _e( 'Card Number', 'edd-gateway-stripe' ); ?>
 					<span class="edd-required-indicator">*</span>
 					<span class="card-type"></span>
 				</label>
-				<span class="edd-description"><?php _e( 'The (typically) 16 digits on the front of your credit card.', 'payment-gateway-stripe' ); ?></span>
+				<span class="edd-description"><?php _e( 'The (typically) 16 digits on the front of your credit card.', 'edd-gateway-stripe' ); ?></span>
 				<div id="stripe-card-element" class="wc-stripe-elements-field">
 				<!-- a Stripe Element will be inserted here. -->
 				</div>
@@ -409,10 +409,10 @@ class Stripe extends StripePayments {
 			<?php do_action( 'edd_before_cc_expiration' ); ?>
 			<p class="card-expiration">
 				<label for="card_exp_month" class="edd-label">
-					<?php _e( 'Expiration (MM/YY)', 'payment-gateway-stripe' ); ?>
+					<?php _e( 'Expiration (MM/YY)', 'edd-gateway-stripe' ); ?>
 					<span class="edd-required-indicator">*</span>
 				</label>
-				<span class="edd-description"><?php _e( 'The date your credit card expires, typically on the front of the card.', 'payment-gateway-stripe' ); ?></span>
+				<span class="edd-description"><?php _e( 'The date your credit card expires, typically on the front of the card.', 'edd-gateway-stripe' ); ?></span>
 				<div id="stripe-exp-element" class="wc-stripe-elements-field">
 				<!-- a Stripe Element will be inserted here. -->
 				</div>
@@ -421,10 +421,10 @@ class Stripe extends StripePayments {
 
 			<p id="edd-card-cvc-wrap">
 				<label for="card_cvc" class="edd-label">
-					<?php _e( 'CVC', 'payment-gateway-stripe' ); ?>
+					<?php _e( 'CVC', 'edd-gateway-stripe' ); ?>
 					<span class="edd-required-indicator">*</span>
 				</label>
-				<span class="edd-description"><?php _e( 'The 3 digit (back) or 4 digit (front) value on your card.', 'payment-gateway-stripe' ); ?></span>
+				<span class="edd-description"><?php _e( 'The 3 digit (back) or 4 digit (front) value on your card.', 'edd-gateway-stripe' ); ?></span>
 				<div id="stripe-cvc-element" class="wc-stripe-elements-field">
 				<!-- a Stripe Element will be inserted here. -->
 				</div>
@@ -647,8 +647,8 @@ class Stripe extends StripePayments {
 		// Load the right message and update the status.
 		$status_message = isset( $payment_intent->last_payment_error )
 			/* translators: 1) The error message that was received from Stripe. */
-			? sprintf( __( 'Stripe SCA authentication failed. Reason: %s', 'payment-gateway-stripe' ), $payment_intent->last_payment_error->message )
-			: __( 'Stripe SCA authentication failed.', 'payment-gateway-stripe' );
+			? sprintf( __( 'Stripe SCA authentication failed. Reason: %s', 'edd-gateway-stripe' ), $payment_intent->last_payment_error->message )
+			: __( 'Stripe SCA authentication failed.', 'edd-gateway-stripe' );
 
 		edd_insert_payment_note( $payment_id, $status_message );
 	}

@@ -46,7 +46,7 @@ class EDD_Gateway_Stripe_Extension_Activation {
 		if ( isset( $plugins[ $this->plugin_path . '/' . $this->plugin_file ]['Name'] ) ) {
 			$this->plugin_name = str_replace( ' for Easy Digital Downloads', '', $plugins[ $this->plugin_path . '/' . $this->plugin_file ]['Name'] );
 		} else {
-			$this->plugin_name = __( 'This plugin', 'payment-gateway-stripe' );
+			$this->plugin_name = __( 'This plugin', 'edd-gateway-stripe' );
 		}
 
 		// Is EDD installed?
@@ -80,9 +80,9 @@ class EDD_Gateway_Stripe_Extension_Activation {
 	 */
 	public function missing_edd_notice() {
 		if ( $this->has_edd ) {
-			echo '<div class="error"><p>' . $this->plugin_name . sprintf( __( ' requires %1$sEasy Digital Downloads%2$s. Please activate it to continue.', 'payment-gateway-stripe' ), '<a href="https://easydigitaldownloads.com/" title="Easy Digital Downloads" target="_blank">', '</a>' ) . '</p></div>';
+			echo '<div class="error"><p>' . $this->plugin_name . sprintf( __( ' requires %1$sEasy Digital Downloads%2$s. Please activate it to continue.', 'edd-gateway-stripe' ), '<a href="https://easydigitaldownloads.com/" title="Easy Digital Downloads" target="_blank">', '</a>' ) . '</p></div>';
 		} else {
-			echo '<div class="error"><p>' . $this->plugin_name . sprintf( __( ' requires %1$sEasy Digital Downloads%2$s. Please install it to continue.', 'payment-gateway-stripe' ), '<a href="https://easydigitaldownloads.com/" title="Easy Digital Downloads" target="_blank">', '</a>' ) . '</p></div>';
+			echo '<div class="error"><p>' . $this->plugin_name . sprintf( __( ' requires %1$sEasy Digital Downloads%2$s. Please install it to continue.', 'edd-gateway-stripe' ), '<a href="https://easydigitaldownloads.com/" title="Easy Digital Downloads" target="_blank">', '</a>' ) . '</p></div>';
 		}
 	}
 }

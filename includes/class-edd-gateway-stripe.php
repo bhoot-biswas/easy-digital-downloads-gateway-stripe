@@ -26,7 +26,7 @@ final class EDD_Gateway_Stripe {
 	 * @var EDD_Gateway_Stripe
 	 * @since 1.0.0
 	 */
-	protected static $_instance = null;
+	private static $instance;
 
 	/**
 	 * Main EDD_Gateway_Stripe Instance.
@@ -39,10 +39,28 @@ final class EDD_Gateway_Stripe {
 	 * @return EDD_Gateway_Stripe - Main instance.
 	 */
 	public static function instance() {
-		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self();
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self();
 		}
-		return self::$_instance;
+		return self::$instance;
+	}
+
+	/**
+	 * Cloning is forbidden.
+	 *
+	 * @since 1.0.0
+	 */
+	public function __clone() {
+		_doing_it_wrong( __FUNCTION__, __( 'Cloning is forbidden.', 'edd-gateway-stripe' ), '1.0.0' );
+	}
+
+	/**
+	 * Unserializing instances of this class is forbidden.
+	 *
+	 * @since 1.0.0
+	 */
+	public function __wakeup() {
+		_doing_it_wrong( __FUNCTION__, __( 'Unserializing instances of this class is forbidden.', 'edd-gateway-stripe' ), '1.0.0' );
 	}
 
 	/**
@@ -53,24 +71,6 @@ final class EDD_Gateway_Stripe {
 		$this->define_constants();
 		$this->includes();
 		$this->init_hooks();
-	}
-
-	/**
-	 * Cloning is forbidden.
-	 *
-	 * @since 1.0.0
-	 */
-	public function __clone() {
-		_doing_it_wrong( __FUNCTION__, __( 'Cloning is forbidden.', 'payment-gateway-stripe' ), '1.0.0' );
-	}
-
-	/**
-	 * Unserializing instances of this class is forbidden.
-	 *
-	 * @since 1.0.0
-	 */
-	public function __wakeup() {
-		_doing_it_wrong( __FUNCTION__, __( 'Unserializing instances of this class is forbidden.', 'payment-gateway-stripe' ), '1.0.0' );
 	}
 
 	/**

@@ -101,10 +101,10 @@ abstract class StripePayments {
 			'amount'               => StripeHelper::get_stripe_amount( $purchase_data['price'] ),
 			'currency'             => edd_get_currency(),
 			/* translators: 1) blog name 2) payment id */
-			'description'          => sprintf( __( '%1$s - Order %2$s', 'payment-gateway-stripe' ), wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ), $payment_id ),
+			'description'          => sprintf( __( '%1$s - Order %2$s', 'edd-gateway-stripe' ), wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ), $payment_id ),
 			'metadata'             => array(
-				__( 'customer_name', 'payment-gateway-stripe' ) => sanitize_text_field( $billing_first_name ) . ' ' . sanitize_text_field( $billing_last_name ),
-				__( 'customer_email', 'payment-gateway-stripe' ) => sanitize_email( $customer->email ),
+				__( 'customer_name', 'edd-gateway-stripe' ) => sanitize_text_field( $billing_first_name ) . ' ' . sanitize_text_field( $billing_last_name ),
+				__( 'customer_email', 'edd-gateway-stripe' ) => sanitize_email( $customer->email ),
 				'payment_id' => $payment_id,
 			),
 			'capture_method'       => edd_get_option( 'stripe_capture', false ) ? 'automatic' : 'manual',
@@ -216,7 +216,7 @@ abstract class StripePayments {
 				edd_update_payment_status( $payment_id, 'pending' );
 
 				/* translators: transaction id */
-				$message = sprintf( __( 'Stripe charge awaiting payment: %s.', 'payment-gateway-stripe' ), $response->id );
+				$message = sprintf( __( 'Stripe charge awaiting payment: %s.', 'edd-gateway-stripe' ), $response->id );
 				edd_insert_payment_note( $payment_id, $message );
 			}
 
@@ -225,12 +225,12 @@ abstract class StripePayments {
 				edd_update_payment_status( $payment_id, 'publish' );
 
 				/* translators: transaction id */
-				$message = sprintf( __( 'Stripe charge complete (Charge ID: %s)', 'payment-gateway-stripe' ), $response->id );
+				$message = sprintf( __( 'Stripe charge complete (Charge ID: %s)', 'edd-gateway-stripe' ), $response->id );
 				edd_insert_payment_note( $payment_id, $message );
 			}
 
 			if ( 'failed' === $response->status ) {
-				$localized_message = __( 'Payment processing failed. Please retry.', 'payment-gateway-stripe' );
+				$localized_message = __( 'Payment processing failed. Please retry.', 'edd-gateway-stripe' );
 				edd_insert_payment_note( $payment_id, $localized_message );
 
 				// Problems? send back
@@ -239,7 +239,7 @@ abstract class StripePayments {
 		} else {
 			edd_update_payment_status( $payment_id, 'publish' );
 			/* translators: transaction id */
-			edd_insert_payment_note( $payment_id, sprintf( __( 'Stripe charge authorized (Charge ID: %s). Process order to take payment, or cancel to remove the pre-authorization.', 'payment-gateway-stripe' ), $response->id ) );
+			edd_insert_payment_note( $payment_id, sprintf( __( 'Stripe charge authorized (Charge ID: %s). Process order to take payment, or cancel to remove the pre-authorization.', 'edd-gateway-stripe' ), $response->id ) );
 		}
 
 		do_action( 'edd_gateway_stripe_process_response', $response, $payment_id );
@@ -337,7 +337,7 @@ abstract class StripePayments {
 			// }
 
 			/* translators: 1) dollar amount 2) transaction id 3) refund message */
-			$refund_message = ( isset( $captured ) && 'yes' === $captured ) ? sprintf( __( 'Refunded %1$s - Refund ID: %2$s - Reason: %3$s', 'payment-gateway-stripe' ), $amount, $response->id, $reason ) : __( 'Pre-Authorization Released', 'payment-gateway-stripe' );
+			$refund_message = ( isset( $captured ) && 'yes' === $captured ) ? sprintf( __( 'Refunded %1$s - Refund ID: %2$s - Reason: %3$s', 'edd-gateway-stripe' ), $amount, $response->id, $reason ) : __( 'Pre-Authorization Released', 'edd-gateway-stripe' );
 
 			$payment->add_note( $refund_message );
 			edd_debug_log( 'Success: ' . html_entity_decode( wp_strip_all_tags( $refund_message ) ) );

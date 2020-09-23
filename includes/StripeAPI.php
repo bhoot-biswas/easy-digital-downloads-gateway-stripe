@@ -105,7 +105,7 @@ class StripeAPI {
 		);
 
 		if ( is_wp_error( $response ) || empty( $response['body'] ) ) {
-			throw new Exception( print_r( $response, true ), __( 'There was a problem connecting to the Stripe API endpoint.', 'payment-gateway-stripe' ) );
+			throw new Exception( print_r( $response, true ), __( 'There was a problem connecting to the Stripe API endpoint.', 'edd-gateway-stripe' ) );
 		}
 
 		if ( $with_headers ) {
@@ -134,7 +134,7 @@ class StripeAPI {
 		);
 
 		if ( is_wp_error( $response ) || empty( $response['body'] ) ) {
-			return new WP_Error( 'stripe_error', __( 'There was a problem connecting to the Stripe API endpoint.', 'payment-gateway-stripe' ) );
+			return new WP_Error( 'stripe_error', __( 'There was a problem connecting to the Stripe API endpoint.', 'edd-gateway-stripe' ) );
 		}
 
 		return json_decode( $response['body'] );

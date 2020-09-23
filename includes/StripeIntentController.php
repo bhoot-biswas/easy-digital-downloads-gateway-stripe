@@ -44,7 +44,7 @@ class StripeIntentController {
 	 */
 	protected function get_payment_id_from_request() {
 		if ( ! isset( $_GET['nonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['nonce'] ), 'edd_stripe_confirm_pi' ) ) {
-			throw new Exception( 'missing-nonce', __( 'CSRF verification failed.', 'payment-gateway-stripe' ) );
+			throw new Exception( 'missing-nonce', __( 'CSRF verification failed.', 'edd-gateway-stripe' ) );
 		}
 
 		// Load the payment ID.
@@ -54,7 +54,7 @@ class StripeIntentController {
 		}
 
 		if ( ! $payment_id ) {
-			throw new Exception( 'missing-payment', __( 'Missing payment ID for payment confirmation', 'payment-gateway-stripe' ) );
+			throw new Exception( 'missing-payment', __( 'Missing payment ID for payment confirmation', 'edd-gateway-stripe' ) );
 		}
 
 		return $payment_id;
@@ -72,7 +72,7 @@ class StripeIntentController {
 			$payment_id = $this->get_payment_id_from_request();
 		} catch ( Exception $e ) {
 			/* translators: Error message text */
-			$message = sprintf( __( 'Payment verification error: %s', 'payment-gateway-stripe' ), $e->getLocalizedMessage() );
+			$message = sprintf( __( 'Payment verification error: %s', 'edd-gateway-stripe' ), $e->getLocalizedMessage() );
 			// wc_add_notice( esc_html( $message ), 'error' );
 
 			$redirect_url = EDD()->cart->is_empty() ? get_home_url() : edd_get_checkout_uri();
