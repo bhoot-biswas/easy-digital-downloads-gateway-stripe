@@ -1,17 +1,8 @@
 <?php
-namespace BengalStudio\EDD\Stripe\Gateways;
-
-// Exit if accessed directly
-defined( 'ABSPATH' ) || exit;
-
-use BengalStudio\EDD\Stripe\StripeAPI;
-use BengalStudio\EDD\Stripe\StripeCustomer;
-use BengalStudio\EDD\Stripe\StripeHelper;
-use EDD_Payment;
-use EDD_Customer;
-use Exception;
-
-abstract class StripePayments {
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+abstract class EDD_Stripe_Payment_Gateway {
 	/**
 	 * Get payment source. This can be a new token/source or existing token.
 	 * If user is logged in and/or has EDD account, create an account on Stripe.

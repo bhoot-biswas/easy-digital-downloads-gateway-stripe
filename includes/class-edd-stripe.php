@@ -5,16 +5,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Main EDD_Gateway_Stripe Class.
+ * Main EDD_Stripe Class.
  *
  * Tap tap tap... Is this thing on?
  *
  * @since 1.0.0
  */
-final class EDD_Gateway_Stripe {
+final class EDD_Stripe {
 
 	/**
-	 * EDD_Gateway_Stripe version.
+	 * EDD_Stripe version.
 	 *
 	 * @var string
 	 */
@@ -23,20 +23,20 @@ final class EDD_Gateway_Stripe {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var EDD_Gateway_Stripe
+	 * @var EDD_Stripe
 	 * @since 1.0.0
 	 */
 	private static $instance;
 
 	/**
-	 * Main EDD_Gateway_Stripe Instance.
+	 * Main EDD_Stripe Instance.
 	 *
-	 * Ensures only one instance of EDD_Gateway_Stripe is loaded or can be loaded.
+	 * Ensures only one instance of EDD_Stripe is loaded or can be loaded.
 	 *
 	 * @since 1.0.0
 	 * @static
 	 * @see edd_gateway_stripe()
-	 * @return EDD_Gateway_Stripe - Main instance.
+	 * @return EDD_Stripe - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -65,7 +65,7 @@ final class EDD_Gateway_Stripe {
 
 	/**
 	 * Is not allowed to call from outside to prevent from creating multiple instances,
-	 * to use the singleton, you have to obtain the instance from EDD_Gateway_Stripe::instance() instead
+	 * to use the singleton, you have to obtain the instance from EDD_Stripe::instance() instead
 	 */
 	private function __construct() {
 		$this->define_constants();
@@ -152,7 +152,7 @@ final class EDD_Gateway_Stripe {
 
 		if ( $this->is_request( 'admin' ) ) {
 			include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/admin/class-edd-reviews-admin.php';
-			new EDD_Gateway_Stripe_Admin();
+			new EDD_Stripe_Admin();
 		}
 
 		if ( $this->is_request( 'frontend' ) ) {
@@ -174,7 +174,7 @@ final class EDD_Gateway_Stripe {
 	 * @since 1.0.0
 	 */
 	public function frontend_hooks() {
-		EDD_Gateway_Stripe_Frontend_Scripts::init();
+		EDD_Stripe_Frontend_Scripts::init();
 	}
 
 	/**
@@ -183,9 +183,9 @@ final class EDD_Gateway_Stripe {
 	 * @since 1.0.0
 	 */
 	private function init_hooks() {
-		EDD_Gateway_Stripe_Post_Types::init();
-		EDD_Gateway_Stripe_Template_Loader::init();
-		EDD_Gateway_Stripe_Comments::init();
+		EDD_Stripe_Post_Types::init();
+		EDD_Stripe_Template_Loader::init();
+		EDD_Stripe_Comments::init();
 	}
 
 	/**

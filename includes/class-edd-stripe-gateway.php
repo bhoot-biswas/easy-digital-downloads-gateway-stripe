@@ -1,20 +1,8 @@
 <?php
-namespace BengalStudio\EDD\Stripe\Gateways;
-
-// Exit if accessed directly
-defined( 'ABSPATH' ) || exit;
-
-use BengalStudio\EDD\Stripe\Loader;
-use BengalStudio\EDD\Stripe\StripeAPI;
-
-use EDD_Customer;
-use Exception;
-use EDD_Payment;
-
 /**
  * Stripe class.
  */
-class Stripe extends StripePayments {
+class EDD_Stripe_Gateway extends WC_Stripe_Payment_Gateway {
 
 	/**
 	 * Gateway ID.
