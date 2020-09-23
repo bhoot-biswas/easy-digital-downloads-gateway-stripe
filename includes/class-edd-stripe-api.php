@@ -1,9 +1,14 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
-
-namespace BengalStudio\EDD\Stripe;
-
-class StripeAPI {
+/**
+ * EDD_Stripe_API class.
+ *
+ * Communicates with Stripe API.
+ */
+class EDD_Stripe_API {
 	/**
 	 * Stripe API Endpoint
 	 */
@@ -49,7 +54,7 @@ class StripeAPI {
 			'application'  => array(
 				'name'    => 'EDD Stripe Gateway',
 				'version' => EDD_GATEWAY_STRIPE_VERSION_NUMBER,
-				'url'     => 'https://bengal-studio.com/products/edd-stripe-gateway/',
+				'url'     => 'https://bengal-studio.com/products/edd-gateway-stripe/',
 			),
 		);
 	}
@@ -64,7 +69,7 @@ class StripeAPI {
 
 		// Return headers.
 		return apply_filters(
-			'edd_stripe_request_headers',
+			'edd_gateway_stripe_request_headers',
 			array(
 				'Authorization'              => 'Basic ' . base64_encode( self::get_secret_key() . ':' ),
 				'Stripe-Version'             => self::STRIPE_API_VERSION,
@@ -89,7 +94,7 @@ class StripeAPI {
 		if ( 'charges' === $api && 'POST' === $method ) {
 			$customer        = ! empty( $request['customer'] ) ? $request['customer'] : '';
 			$source          = ! empty( $request['source'] ) ? $request['source'] : $customer;
-			$idempotency_key = apply_filters( 'edd_stripe_idempotency_key', $request['metadata']['order_id'] . '-' . $source, $request );
+			$idempotency_key = apply_filters( 'edd_gateway_stripe_idempotency_key', $request['metadata']['order_id'] . '-' . $source, $request );
 
 			$headers['Idempotency-Key'] = $idempotency_key;
 		}
@@ -99,7 +104,7 @@ class StripeAPI {
 			array(
 				'method'  => $method,
 				'headers' => $headers,
-				'body'    => apply_filters( 'edd_stripe_request_body', $request, $api ),
+				'body'    => apply_filters( 'edd_gateway_stripe_request_body', $request, $api ),
 				'timeout' => 70,
 			)
 		);
