@@ -18,5 +18,8 @@
 	"bugs": {
 		"url": "https://github.com/bhoot-biswas/edd-gateway-stripe/issues"
 	},
-	"homepage": "https://github.com/bhoot-biswas/edd-gateway-stripe#readme"
+	"homepage": "https://github.com/bhoot-biswas/edd-gateway-stripe#readme",
+	"devDependencies": {
+		"@wordpress/scripts": "12.2.1"
+	}
 }
