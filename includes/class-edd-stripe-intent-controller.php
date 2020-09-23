@@ -1,18 +1,14 @@
 <?php
-namespace BengalStudio\EDD\Stripe;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use Exception;
-
 /**
- * StripeIntentController class.
+ * EDD_Stripe_Intent_Controller class.
  *
  * Handles in-checkout AJAX calls, related to Payment Intents.
  */
-class StripeIntentController {
+class EDD_Stripe_Intent_Controller {
 	/**
 	 * Holds an instance of the gateway class.
 	 * @var [type]
@@ -32,7 +28,7 @@ class StripeIntentController {
 	 */
 	protected function get_gateway() {
 		if ( ! isset( $this->gateway ) ) {
-			$this->gateway = Gateways\Stripe::instance();
+			$this->gateway = new EDD_Gateway_Stripe();
 		}
 
 		return $this->gateway;
@@ -44,7 +40,7 @@ class StripeIntentController {
 	 */
 	protected function get_payment_id_from_request() {
 		if ( ! isset( $_GET['nonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['nonce'] ), 'edd_stripe_confirm_pi' ) ) {
-			throw new Exception( 'missing-nonce', __( 'CSRF verification failed.', 'edd-gateway-stripe' ) );
+			throw new EDD_Stripe_Exception( 'missing-nonce', __( 'CSRF verification failed.', 'edd-gateway-stripe' ) );
 		}
 
 		// Load the payment ID.
@@ -54,7 +50,7 @@ class StripeIntentController {
 		}
 
 		if ( ! $payment_id ) {
-			throw new Exception( 'missing-payment', __( 'Missing payment ID for payment confirmation', 'edd-gateway-stripe' ) );
+			throw new EDD_Stripe_Exception( 'missing-payment', __( 'Missing payment ID for payment confirmation', 'edd-gateway-stripe' ) );
 		}
 
 		return $payment_id;
@@ -70,7 +66,7 @@ class StripeIntentController {
 
 		try {
 			$payment_id = $this->get_payment_id_from_request();
-		} catch ( Exception $e ) {
+		} catch ( EDD_Stripe_Exception $e ) {
 			/* translators: Error message text */
 			$message = sprintf( __( 'Payment verification error: %s', 'edd-gateway-stripe' ), $e->getLocalizedMessage() );
 			// wc_add_notice( esc_html( $message ), 'error' );
@@ -92,7 +88,7 @@ class StripeIntentController {
 			}
 
 			exit;
-		} catch ( Exception $e ) {
+		} catch ( EDD_Stripe_Exception $e ) {
 			$this->handle_error( $e, edd_get_checkout_uri() );
 		}
 	}
