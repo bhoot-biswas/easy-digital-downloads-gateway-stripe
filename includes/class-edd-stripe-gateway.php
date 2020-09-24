@@ -2,7 +2,7 @@
 /**
  * Stripe class.
  */
-class EDD_Stripe_Gateway extends WC_Stripe_Payment_Gateway {
+class EDD_Stripe_Gateway extends EDD_Stripe_Payment_Gateway {
 
 	/**
 	 * Gateway ID.

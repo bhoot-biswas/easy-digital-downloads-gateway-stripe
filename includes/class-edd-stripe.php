@@ -77,10 +77,10 @@ final class EDD_Stripe {
 	 * Define plugin Constants.
 	 */
 	private function define_constants() {
-		$this->define( 'EDD_GATEWAY_STRIPE_ABSPATH', dirname( EDD_GATEWAY_STRIPE_PLUGIN_FILE ) . '/' );
-		$this->define( 'EDD_GATEWAY_STRIPE_PLUGIN_BASENAME', plugin_basename( EDD_GATEWAY_STRIPE_PLUGIN_FILE ) );
-		$this->define( 'EDD_GATEWAY_STRIPE_VERSION', $this->version );
-		$this->define( 'EDD_GATEWAY_STRIPE_TEMPLATE_DEBUG_MODE', false );
+		$this->define( 'EDD_STRIPE_ABSPATH', dirname( EDD_STRIPE_PLUGIN_FILE ) . '/' );
+		$this->define( 'EDD_STRIPE_PLUGIN_BASENAME', plugin_basename( EDD_STRIPE_PLUGIN_FILE ) );
+		$this->define( 'EDD_STRIPE_VERSION', $this->version );
+		$this->define( 'EDD_STRIPE_TEMPLATE_DEBUG_MODE', false );
 	}
 
 	/**
@@ -139,13 +139,13 @@ final class EDD_Stripe {
 	 */
 	private function includes() {
 		// Classes.
-		require_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-stripe-exception.php';
-		require_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-stripe-helper.php';
-		include_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-stripe-api.php';
-		require_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/abstracts/abstract-edd-stripe-payment-gateway.php';
-		require_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-stripe-gateway.php';
-		require_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-stripe-customer.php';
-		require_once EDD_GATEWAY_STRIPE_ABSPATH . 'includes/class-edd-stripe-intent-controller.php';
+		require_once EDD_STRIPE_ABSPATH . 'includes/class-edd-stripe-exception.php';
+		require_once EDD_STRIPE_ABSPATH . 'includes/class-edd-stripe-helper.php';
+		include_once EDD_STRIPE_ABSPATH . 'includes/class-edd-stripe-api.php';
+		require_once EDD_STRIPE_ABSPATH . 'includes/abstracts/abstract-edd-stripe-payment-gateway.php';
+		require_once EDD_STRIPE_ABSPATH . 'includes/class-edd-stripe-gateway.php';
+		require_once EDD_STRIPE_ABSPATH . 'includes/class-edd-stripe-customer.php';
+		require_once EDD_STRIPE_ABSPATH . 'includes/class-edd-stripe-intent-controller.php';
 
 		if ( $this->is_request( 'frontend' ) ) {
 			$this->frontend_includes();
@@ -181,7 +181,7 @@ final class EDD_Stripe {
 	 * @return string
 	 */
 	public function plugin_url() {
-		return untrailingslashit( plugins_url( '/', EDD_GATEWAY_STRIPE_PLUGIN_FILE ) );
+		return untrailingslashit( plugins_url( '/', EDD_STRIPE_PLUGIN_FILE ) );
 	}
 
 	/**
@@ -190,7 +190,7 @@ final class EDD_Stripe {
 	 * @return string
 	 */
 	public function plugin_path() {
-		return untrailingslashit( plugin_dir_path( EDD_GATEWAY_STRIPE_PLUGIN_FILE ) );
+		return untrailingslashit( plugin_dir_path( EDD_STRIPE_PLUGIN_FILE ) );
 	}
 
 }

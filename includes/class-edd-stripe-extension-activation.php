@@ -2,7 +2,7 @@
 /**
  * Activation handler
  *
- * @package EDD_Gateway_Stripe\ActivationHandler
+ * @package EDD_Stripe\ActivationHandler
  * @version 1.0.0
  */
 
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since       1.0.0
  */
-class EDD_Gateway_Stripe_Extension_Activation {
+class EDD_Stripe_Extension_Activation {
 
 	public $plugin_name, $plugin_path, $plugin_file, $has_edd;
 

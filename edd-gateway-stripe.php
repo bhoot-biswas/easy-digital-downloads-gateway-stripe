@@ -9,7 +9,7 @@
  * Domain Path:     /languages
  * Version:         1.0.0
  *
- * @package         EDD_Gateway_Stripe
+ * @package         EDD_Stripe
  */
 
 // Exit if accessed directly
@@ -17,17 +17,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( ! defined( 'EDD_GATEWAY_STRIPE_PLUGIN_FILE' ) ) {
-	define( 'EDD_GATEWAY_STRIPE_PLUGIN_FILE', __FILE__ );
+if ( ! defined( 'EDD_STRIPE_PLUGIN_FILE' ) ) {
+	define( 'EDD_STRIPE_PLUGIN_FILE', __FILE__ );
 }
 
-// Include the main EDD_Gateway_Stripe class.
-if ( ! class_exists( 'EDD_Gateway_Stripe', false ) ) {
-	// include_once dirname( EDD_GATEWAY_STRIPE_PLUGIN_FILE ) . '/includes/class-edd-gateway-stripe.php';
+// Include the main EDD_Stripe class.
+if ( ! class_exists( 'EDD_Stripe', false ) ) {
+	include_once dirname( EDD_STRIPE_PLUGIN_FILE ) . '/includes/class-edd-stripe.php';
 }
 
 /**
- * The main function responsible for returning the one true EDD_Gateway_Stripe
+ * The main function responsible for returning the one true EDD_Stripe
  * Instance to functions everywhere.
  *
  * Use this function like you would a global variable, except without needing
@@ -37,21 +37,21 @@ if ( ! class_exists( 'EDD_Gateway_Stripe', false ) ) {
  *
  * @since  1.0.0
  *
- * @return object The one true EDD_Gateway_Stripe Instance
+ * @return object The one true EDD_Stripe Instance
  */
-function edd_gateway_stripe() {
+function edd_stripe() {
 	if ( ! class_exists( 'Easy_Digital_Downloads' ) ) {
 
-		if ( ! class_exists( 'EDD_Gateway_Stripe_Extension_Activation' ) ) {
-			include_once 'includes/class-edd-gateway-stripe-extension-activation.php';
+		if ( ! class_exists( 'EDD_Stripe_Extension_Activation' ) ) {
+			include_once 'includes/class-edd-stripe-extension-activation.php';
 		}
 
-		$activation = new EDD_Gateway_Stripe_Extension_Activation( plugin_dir_path( __FILE__ ), basename( __FILE__ ) );
+		$activation = new EDD_Stripe_Extension_Activation( plugin_dir_path( __FILE__ ), basename( __FILE__ ) );
 		$activation = $activation->run();
 
 	} else {
-		return EDD_Gateway_Stripe::instance();
+		return EDD_Stripe::instance();
 	}
 }
 
-// add_action( 'plugins_loaded', 'edd_gateway_stripe', 100 );
+add_action( 'plugins_loaded', 'edd_stripe', 100 );
