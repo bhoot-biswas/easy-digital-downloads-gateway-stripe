@@ -6,7 +6,7 @@ import "./scss/index.scss";
 	class EDD_Stripe {
 		constructor() {
 			try {
-				this.stripe = Stripe(edd_stripe_params.key);
+				this.stripe = Stripe(eddStripeParams.key);
 			} catch (error) {
 				console.log(error);
 				return;
@@ -33,8 +33,8 @@ import "./scss/index.scss";
 			this.form.on("submit", this.onSubmit);
 			body.on("edd_gateway_loaded", this.createElements);
 			$(document).ajaxComplete(function(event, xhr, settings) {
-				console.log(xhr.responseText);
-				// window.location = 'https://facebook.com';
+				// console.log(xhr.responseText);
+				// window.location = 'https://example.com';
 			});
 
 			this.maybeConfirmIntent();

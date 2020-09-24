@@ -232,13 +232,13 @@ class EDD_Stripe_Gateway extends EDD_Stripe_Payment_Gateway {
 			return;
 		}
 
-		$asset_file = include( NC_ABSPATH . 'build/index.asset.php' );
+		$asset_file = include( EDD_STRIPE_ABSPATH . 'build/index.asset.php' );
 		$handle     = 'edd-gateway-stripe';
 		wp_register_script( 'stripe', 'https://js.stripe.com/v3/', '', '3.0', true );
 		wp_register_script(
 			$handle,
-			edd_stripe()->plugin_url( 'build/index.js' ),
-			$asset_file['dependencies'],
+			edd_stripe()->plugin_url() . '/build/index.js',
+			array_merge( $asset_file['dependencies'], [ 'stripe' ] ),
 			$asset_file['version'],
 			true
 		);
@@ -255,7 +255,7 @@ class EDD_Stripe_Gateway extends EDD_Stripe_Payment_Gateway {
 
 		wp_register_style(
 			$handle,
-			edd_stripe()->plugin_url( 'index.css' ),
+			edd_stripe()->plugin_url() . '/build/index.css',
 			array(),
 			$asset_file['version']
 		);
@@ -266,8 +266,8 @@ class EDD_Stripe_Gateway extends EDD_Stripe_Payment_Gateway {
 	 * @return [type] [description]
 	 */
 	public function load_scripts() {
-		wp_enqueue_script( 'edd_stripe' );
-		wp_enqueue_style( 'edd_stripe' );
+		wp_enqueue_script( 'edd-gateway-stripe' );
+		wp_enqueue_style( 'edd-gateway-stripe' );
 	}
 
 	/**
