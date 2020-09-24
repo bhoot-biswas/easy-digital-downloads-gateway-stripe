@@ -99,7 +99,7 @@ class EDD_Stripe_Gateway extends EDD_Stripe_Payment_Gateway {
 			return;
 		}
 
-		StripeAPI::set_secret_key( $this->secret_key );
+		EDD_Stripe_API::set_secret_key( $this->secret_key );
 	}
 
 	/**
@@ -528,7 +528,7 @@ class EDD_Stripe_Gateway extends EDD_Stripe_Payment_Gateway {
 		}
 
 		if ( 'requires_payment_method' === $payment_intent->status && isset( $payment_intent->last_payment_error ) && 'authentication_required' === $payment_intent->last_payment_error->code ) {
-			$payment_intent = StripeAPI::request(
+			$payment_intent = EDD_Stripe_API::request(
 				array(
 					'payment_method' => $payment_intent->last_payment_error->source->id,
 				),
