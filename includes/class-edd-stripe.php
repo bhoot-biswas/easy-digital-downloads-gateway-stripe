@@ -147,6 +147,8 @@ final class EDD_Stripe {
 		require_once EDD_STRIPE_ABSPATH . 'includes/class-edd-stripe-customer.php';
 		require_once EDD_STRIPE_ABSPATH . 'includes/class-edd-stripe-intent-controller.php';
 
+		EDD_Stripe_Gateway::instance();
+
 		if ( $this->is_request( 'frontend' ) ) {
 			$this->frontend_includes();
 			$this->frontend_hooks();
